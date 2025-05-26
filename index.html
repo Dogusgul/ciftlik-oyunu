@@ -169,13 +169,63 @@
     border-radius: 9px 0 0 9px;
     transition: width 0.5s ease;
   }
+  /* --- MOBİL DESTEK: Responsive düzen --- */
+  @media (max-width: 650px) {
+    body {
+      flex-direction: column;
+      padding: 8px;
+      gap: 8px;
+    }
+    #leftPanel, #rightPanel {
+      width: 100%;
+      max-width: 100vw;
+      min-width: unset;
+      padding: 8px !important;
+      box-sizing: border-box;
+    }
+    #farm {
+      grid-template-columns: repeat(3, 1fr);
+      min-height: 220px;
+      grid-gap: 5px;
+    }
+    .plot {
+      width: 60px;
+      height: 60px;
+      font-size: 22px;
+    }
+    .plot.grown {
+      font-size: 28px;
+    }
+    #bugFarm {
+      width: 98vw;
+      height: 210px;
+      margin: 0 auto 10px;
+    }
+    #pagination button {
+      width: 28px;
+      font-size: 14px;
+      padding: 3px 0;
+    }
+    button {
+      font-size: 14px;
+      padding: 8px 6px;
+    }
+    #marketModal, #marketPricesModal {
+      width: 98vw !important;
+      min-width: unset;
+      max-width: 420px;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      padding: 10px;
+    }
+  }
 </style>
 </head>
 <body>
 
 <div id="leftPanel">
   <h1 id="farmTitle">Çiftlik 🌾</h1>
-  <div id="info">Gün: 1 | Para: 100₺ | Versiyon: 1.9.0</div>
+  <div id="info">Gün: 1 | Para: 100₺ | Versiyon: 2.0.0</div>
   <div id="message"></div>
 
   <div id="inventory"></div>
@@ -235,7 +285,7 @@
     buy: new Audio('data:audio/wav;base64,UklGRlIAAABXQVZFZm10IBAAAAABAAEAgD4AAIA+AAABAAgAZGF0YRAAAA==')
   };
 
-  const GAME_VERSION = '1.9.0';
+  const GAME_VERSION = '2.0.0';
 
   const infoEl = document.getElementById('info');
   const messageEl = document.getElementById('message');
@@ -266,40 +316,7 @@
   const farmSize = 5;
   const MS_IN_MINUTE = 60000;
 
-  // GÜNCEL GÜÇLENDİRİCİLER
-  const enhancers = {
-    fastHarvest:   { name: 'Hızlı Hasat Güçlendirici', description: 'Ekinlerin olgunlaşma süresi %20 azalır.', price: 5000 },
-    fertileSoil:   { name: 'Verimli Toprak', description: 'Hasattan elde edilen para %20 artar.', price: 9000 },
-    richSeed:      { name: 'Zengin Tohum', description: 'Hasatta %30 ihtimalle +1 ek ürün kazanırsın.', price: 12000 },
-    freshKeeper:   { name: 'Tazelik Koruyucu', description: 'Hasada hazır ürünlerin bozulma süresini 48 saate çıkarır.', price: 8000 }
-  };
-
-  // DİĞER TANIMLAR
-  let money = 100;
-  let seeds = { corn: 5, tomato: 5, carrot: 2, wheat: 1, pepper: 1 };
-  let flowerSeeds = { rose: 3, tulip: 3, daisy: 3, sunflower: 1, orchid: 1 };
-  let purchasedBugs = {};
-  let purchasedEnhancers = {};
-
-  let farms = [];
-  for(let i=0; i<farmPagesCount-1; i++) {
-    let pageFarm = [];
-    for(let j=0; j<farmSize*farmSize; j++) {
-      pageFarm.push({
-        state: 'empty',
-        cropType: null,
-        plantedAt: null,
-        growTimeMinutes: 0
-      });
-    }
-    farms.push(pageFarm);
-  }
-  farms.push([{ bugType: null, x: 0, y: 0 }]);
-
-  let currentFarmPage = 0;
-  let selectedSeedKey = null;
-  let selectedSeedCategory = 'crops';
-
+  // Gelişmiş süreler isteğe uygun!
   const crops = {
     corn:    { name: 'Mısır',     growTimeMinutes: 20,  price: 15, emoji: '🌽', seedPrice: 10 },
     tomato:  { name: 'Domates',   growTimeMinutes: 16,  price: 10, emoji: '🍅', seedPrice: 8 },
@@ -326,6 +343,40 @@
     mantis:      { name: 'Sinek Kapan',  emoji: '🦗',  price: 1400 }
   };
 
+  // Enerjiyle ilgili her şey kaldırıldı! YENİ güçlendirmeler burada:
+  const enhancers = {
+    fastHarvest:   { name: 'Hızlı Hasat Güçlendirici', description: 'Ekinlerin olgunlaşma süresi %20 azalır.', price: 5000 },
+    fertileSoil:   { name: 'Verimli Toprak',           description: 'Hasattan elde edilen para %20 artar.', price: 9000 },
+    richSeed:      { name: 'Zengin Tohum',             description: 'Hasatta %30 ihtimalle +1 ek ürün verir.', price: 12000 },
+    freshKeeper:   { name: 'Tazelik Koruyucu',         description: 'Bozulma süresini 48 saate çıkarır.', price: 8000 }
+  };
+
+  let money = 100;
+
+  let seeds = { corn: 5, tomato: 5, carrot: 2, wheat: 1, pepper: 1 };
+  let flowerSeeds = { rose: 3, tulip: 3, daisy: 3, sunflower: 1, orchid: 1 };
+  let purchasedBugs = {};
+  let purchasedEnhancers = {};
+
+  let farms = [];
+  for(let i=0; i<farmPagesCount-1; i++) {
+    let pageFarm = [];
+    for(let j=0; j<farmSize*farmSize; j++) {
+      pageFarm.push({
+        state: 'empty',
+        cropType: null,
+        plantedAt: null,
+        growTimeMinutes: 0
+      });
+    }
+    farms.push(pageFarm);
+  }
+  farms.push([{ bugType: null, x: 0, y: 0 }]);
+
+  let currentFarmPage = 0;
+  let selectedSeedKey = null;
+  let selectedSeedCategory = 'crops';
+
   const allProducts = {...crops, ...flowers};
 
   let marketPrices = {};
@@ -335,11 +386,13 @@
   const SAVE_KEY = 'feyza_ciftligi_save_v2';
   const FARM_NAME_KEY = 'feyza_ciftligi_farm_name';
 
+  // GÜN SİSTEMİ (GERÇEK GÜNLÜK)
   function getCurrentGameDay() {
     const now = new Date();
     return `${now.getFullYear()}-${(now.getMonth()+1).toString().padStart(2,"0")}-${now.getDate().toString().padStart(2,"0")}`;
   }
 
+  // Piyasa sadece gün değişince update olmalı
   function updateMarketPrices() {
     const currentDay = getCurrentGameDay();
     if(currentDay === marketLastUpdatedDay) return;
@@ -499,6 +552,8 @@
         } else {
           if(isPlotReady(plot)) {
             harvestCrop(i);
+          } else if(isPlotSpoiled(plot)) {
+            showMessage('Bu ürün bozuldu, hasat edemezsin!');
           } else {
             showMessage('Ekin büyüyor, sabırlı ol!');
           }
@@ -513,31 +568,30 @@
     updateTimeBars();
   }
 
-  // ----------- GÜÇLENDİRİCİ & BOZULMA SİSTEMİ -----------
+  // YENİ güçlendirmelerle tam fonksiyonel bitki ekimi ve hasat sistemi
   function isPlotReady(plot) {
     if(plot.state !== 'planted') return false;
     if(!plot.plantedAt) return false;
     const now = Date.now();
-    let growTime = plot.growTimeMinutes;
-    // Hızlı hasat güçlendirici aktifse
-    if(purchasedEnhancers.fastHarvest) {
-      growTime = Math.floor(growTime * 0.8);
-    }
     const elapsedMinutes = (now - plot.plantedAt) / MS_IN_MINUTE;
-    return elapsedMinutes >= growTime && !isPlotSpoiled(plot);
+    return elapsedMinutes >= getEffectiveGrowTime(plot);
+  }
+
+  function getEffectiveGrowTime(plot) {
+    let t = plot.growTimeMinutes;
+    if(purchasedEnhancers.fastHarvest) t = Math.floor(t * 0.8);
+    return t;
   }
 
   function isPlotSpoiled(plot) {
     if(plot.state !== 'planted' || !plot.plantedAt) return false;
     const now = Date.now();
-    let growTime = plot.growTimeMinutes;
-    if(purchasedEnhancers.fastHarvest) {
-      growTime = Math.floor(growTime * 0.8);
-    }
     const elapsedMinutes = (now - plot.plantedAt) / MS_IN_MINUTE;
+    const readyTime = getEffectiveGrowTime(plot);
+    // Bozulma süresi: default 24 saat, freshKeeper varsa 48 saat
     const maxHours = purchasedEnhancers.freshKeeper ? 48 : 24;
     const spoilMinutes = maxHours * 60;
-    return elapsedMinutes >= (growTime + spoilMinutes);
+    return elapsedMinutes >= (readyTime + spoilMinutes);
   }
 
   function plantCrop(index, cropKey) {
@@ -557,9 +611,6 @@
     }
 
     let growTime = cropData.growTimeMinutes;
-    if(purchasedEnhancers.fastHarvest) {
-      growTime = Math.floor(growTime * 0.8);
-    }
 
     let farm = farms[currentFarmPage];
     farm[index] = {
@@ -590,7 +641,6 @@
       cropData = crops[cropKey];
     }
 
-    // Bozulduysa hasat yapılamaz
     if(isPlotSpoiled(plot)) {
       farm[index] = { state: 'empty', cropType: null, plantedAt: null, growTimeMinutes: 0 };
       showMessage(`${cropData.name} bozulmuş, hasat edilemedi! 😢`);
@@ -622,84 +672,11 @@
     if(extra)
       showMessage(`${cropData.name} hasat edildi! +${totalGain}₺ (BONUS: +1 ek ürün!)`);
     else
-      showMessage(`${cropData.name} hasat edildi! +${totalGain}₺`);
+      showMessage(`${cropData.name} hasat edildi! +${gain}₺`);
     updateInfo();
     drawFarm();
     saveGameAuto();
   }
-
-  function updateTimeBars() {
-    timeBarsContainer.innerHTML = '';
-    if(currentFarmPage === farmPagesCount - 1) return;
-
-    const farm = farms[currentFarmPage];
-    const sourceCrops = currentFarmPage === 1 ? flowers : crops;
-
-    farm.forEach((plot, index) => {
-      if(plot.state === 'planted' && plot.plantedAt) {
-        const now = Date.now();
-        let growTime = plot.growTimeMinutes;
-        if(purchasedEnhancers.fastHarvest) {
-          growTime = Math.floor(growTime * 0.8);
-        }
-        const elapsedMs = now - plot.plantedAt;
-        const totalMs = growTime * MS_IN_MINUTE;
-        const remainingMs = totalMs - elapsedMs;
-        const percent = Math.min(100, Math.max(0, (elapsedMs / totalMs) * 100));
-        const remainingSec = Math.max(0, Math.floor(remainingMs / 1000));
-        const min = Math.floor(remainingSec / 60);
-        const sec = remainingSec % 60;
-
-        // Bozulmaya kalan zamanı hesapla
-        let spoilLeft = 0;
-        if (isPlotReady(plot)) {
-          // Hasada hazır, çürüme süresi başlıyor
-          const elapsedSinceReady = (elapsedMs - totalMs) / 1000;
-          const spoilSeconds = ((purchasedEnhancers.freshKeeper ? 48 : 24) * 3600) - elapsedSinceReady;
-          spoilLeft = Math.max(0, Math.floor(spoilSeconds));
-        }
-
-        const container = document.createElement('div');
-        container.className = 'time-bar-container';
-
-        const label = document.createElement('div');
-        label.className = 'time-bar-label';
-        label.textContent = `${sourceCrops[plot.cropType].emoji} ${sourceCrops[plot.cropType].name} (#${index + 1})`;
-
-        const timeText = document.createElement('span');
-        if(isPlotSpoiled(plot)) {
-          timeText.textContent = 'BOZULDU!';
-          label.style.color = '#b71c1c';
-        } else if(isPlotReady(plot)) {
-          if(spoilLeft > 0) {
-            const spoilH = Math.floor(spoilLeft/3600);
-            const spoilM = Math.floor((spoilLeft%3600)/60);
-            timeText.textContent = `Hasat Hazır / Bozulmaya: ${spoilH}sa ${spoilM}dk`;
-          } else {
-            timeText.textContent = 'Hasat Hazır!';
-          }
-        } else {
-          timeText.textContent = remainingMs <= 0 ? 'Hasat hazır!' : `${min}:${sec.toString().padStart(2,'0')}`;
-        }
-        label.appendChild(timeText);
-
-        const bar = document.createElement('div');
-        bar.className = 'time-bar';
-
-        const fill = document.createElement('div');
-        fill.className = 'time-bar-fill';
-        fill.style.width = `${percent}%`;
-
-        bar.appendChild(fill);
-        container.appendChild(label);
-        container.appendChild(bar);
-
-        timeBarsContainer.appendChild(container);
-      }
-    });
-  }
-
-  // ------------------ OYUNUN KALAN KISMI ------------------
 
   function openMarket() {
     marketModal.style.display = 'block';
@@ -968,6 +945,73 @@
     setTimeout(() => {
       if (messageEl.textContent === text) messageEl.textContent = '';
     }, 3000);
+  }
+
+  function updateTimeBars() {
+    timeBarsContainer.innerHTML = '';
+    if(currentFarmPage === farmPagesCount - 1) return;
+
+    const farm = farms[currentFarmPage];
+    const sourceCrops = currentFarmPage === 1 ? flowers : crops;
+
+    farm.forEach((plot, index) => {
+      if(plot.state === 'planted' && plot.plantedAt) {
+        const now = Date.now();
+        const growTime = getEffectiveGrowTime(plot);
+        const elapsedMs = now - plot.plantedAt;
+        const totalMs = growTime * MS_IN_MINUTE;
+        const remainingMs = totalMs - elapsedMs;
+        const percent = Math.min(100, Math.max(0, (elapsedMs / totalMs) * 100));
+        const remainingSec = Math.max(0, Math.floor(remainingMs / 1000));
+        const min = Math.floor(remainingSec / 60);
+        const sec = remainingSec % 60;
+
+        // Bozulmaya kalan zamanı hesapla
+        let spoilLeft = 0;
+        if (isPlotReady(plot)) {
+          const spoilMs = ((purchasedEnhancers.freshKeeper ? 48 : 24) * 60 * 60000);
+          const elapsedSinceReady = elapsedMs - totalMs;
+          spoilLeft = Math.max(0, Math.floor((spoilMs - elapsedSinceReady)/1000));
+        }
+
+        const container = document.createElement('div');
+        container.className = 'time-bar-container';
+
+        const label = document.createElement('div');
+        label.className = 'time-bar-label';
+        label.textContent = `${sourceCrops[plot.cropType].emoji} ${sourceCrops[plot.cropType].name} (#${index + 1})`;
+
+        const timeText = document.createElement('span');
+        if(isPlotSpoiled(plot)) {
+          timeText.textContent = 'BOZULDU!';
+          label.style.color = '#b71c1c';
+        } else if(isPlotReady(plot)) {
+          if(spoilLeft > 0) {
+            const spoilH = Math.floor(spoilLeft/3600);
+            const spoilM = Math.floor((spoilLeft%3600)/60);
+            timeText.textContent = `Hasat Hazır / Bozulmaya: ${spoilH}sa ${spoilM}dk`;
+          } else {
+            timeText.textContent = 'Hasat Hazır!';
+          }
+        } else {
+          timeText.textContent = remainingMs <= 0 ? 'Hasat hazır!' : `${min}:${sec.toString().padStart(2,'0')}`;
+        }
+        label.appendChild(timeText);
+
+        const bar = document.createElement('div');
+        bar.className = 'time-bar';
+
+        const fill = document.createElement('div');
+        fill.className = 'time-bar-fill';
+        fill.style.width = `${percent}%`;
+
+        bar.appendChild(fill);
+        container.appendChild(label);
+        container.appendChild(bar);
+
+        timeBarsContainer.appendChild(container);
+      }
+    });
   }
 
   function periodicUpdate() {
