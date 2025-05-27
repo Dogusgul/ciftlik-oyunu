@@ -125,11 +125,6 @@
     cursor: default;
     overflow: hidden;
   }
-  .bug {
-    position: absolute; font-size: 30px;
-    user-select: none; cursor: pointer;
-    transition: transform 0.5s ease;
-  }
   #animalFarm {
     display: flex;
     flex-direction: column;
@@ -162,12 +157,11 @@
     margin-top: 6px;
   }
   .harvest-status {
-    position: absolute;
-    bottom: 8px;
-    right: 12px;
     font-weight: bold;
     color: #aed581;
     font-size: 14px;
+    margin-top: 4px;
+    user-select: none;
   }
   @media (max-width: 650px) {
     body {
@@ -318,42 +312,42 @@
   const newGameBtn = document.getElementById('newGameBtn');
   const farmTitle = document.getElementById('farmTitle');
 
-  const farmPagesCount = 4;  // 4 sayfa oldu
+  const farmPagesCount = 4;
   const farmSize = 5;
   const MS_IN_MINUTE = 60000;
   const MS_IN_HALF_HOUR = 1800000;
 
   const crops = {
-    corn:    { name: 'Mısır',     growTimeMinutes: 20,  price: 15, emoji: '🌽', seedPrice: 10 },
-    tomato:  { name: 'Domates',   growTimeMinutes: 16,  price: 10, emoji: '🍅', seedPrice: 8 },
-    carrot:  { name: 'Havuç',     growTimeMinutes: 45,  price: 12, emoji: '🥕', seedPrice: 9 },
-    wheat:   { name: 'Buğday',    growTimeMinutes: 60,  price: 18, emoji: '🌾', seedPrice: 14 },
-    pepper:  { name: 'Biber',     growTimeMinutes: 25,  price: 20, emoji: '🌶️', seedPrice: 15 }
+    corn:    { name: 'Mısır', growTimeMinutes: 20, price: 15, emoji: '🌽', seedPrice: 10 },
+    tomato:  { name: 'Domates', growTimeMinutes: 16, price: 10, emoji: '🍅', seedPrice: 8 },
+    carrot:  { name: 'Havuç', growTimeMinutes: 45, price: 12, emoji: '🥕', seedPrice: 9 },
+    wheat:   { name: 'Buğday', growTimeMinutes: 60, price: 18, emoji: '🌾', seedPrice: 14 },
+    pepper:  { name: 'Biber', growTimeMinutes: 25, price: 20, emoji: '🌶️', seedPrice: 15 }
   };
 
   const flowers = {
-    rose:      { name: 'Gül',      growTimeMinutes: 8,  price: 11, emoji: '🌹', seedPrice: 9 },
-    tulip:     { name: 'Lale',     growTimeMinutes: 7,  price: 10, emoji: '🌷', seedPrice: 9 },
-    daisy:     { name: 'Papatya',  growTimeMinutes: 5,  price: 11, emoji: '🌼', seedPrice: 9 },
-    sunflower: { name: 'Ayçiçeği', growTimeMinutes: 9,  price: 12, emoji: '🌻', seedPrice: 15 },
-    orchid:    { name: 'Orkide',   growTimeMinutes: 10, price: 13, emoji: '💐', seedPrice: 9 }
+    rose:      { name: 'Gül', growTimeMinutes: 8, price: 11, emoji: '🌹', seedPrice: 9 },
+    tulip:     { name: 'Lale', growTimeMinutes: 7, price: 10, emoji: '🌷', seedPrice: 9 },
+    daisy:     { name: 'Papatya', growTimeMinutes: 5, price: 11, emoji: '🌼', seedPrice: 9 },
+    sunflower: { name: 'Ayçiçeği', growTimeMinutes: 9, price: 12, emoji: '🌻', seedPrice: 15 },
+    orchid:    { name: 'Orkide', growTimeMinutes: 10, price: 13, emoji: '💐', seedPrice: 9 }
   };
 
   const bugs = {
-    spider:      { name: 'Örümcek',      emoji: '🕷️', price: 1000 },
-    ladybug:     { name: 'Uğur Böceği',  emoji: '🐞',  price: 1000 },
-    ant:         { name: 'Karınca',      emoji: '🐜',  price: 1000 },
-    beetle:      { name: 'Böcek',        emoji: '🐛',  price: 1100 },
-    caterpillar: { name: 'Tırtıl',       emoji: '🐛',  price: 1200 },
-    centipede:   { name: 'Kırkayak',     emoji: '🐛',  price: 1300 },
-    mantis:      { name: 'Sinek Kapan',  emoji: '🦗',  price: 1400 }
+    spider:      { name: 'Örümcek', emoji: '🕷️', price: 1000 },
+    ladybug:     { name: 'Uğur Böceği', emoji: '🐞', price: 1000 },
+    ant:         { name: 'Karınca', emoji: '🐜', price: 1000 },
+    beetle:      { name: 'Böcek', emoji: '🐛', price: 1100 },
+    caterpillar: { name: 'Tırtıl', emoji: '🐛', price: 1200 },
+    centipede:   { name: 'Kırkayak', emoji: '🐛', price: 1300 },
+    mantis:      { name: 'Sinek Kapan', emoji: '🦗', price: 1400 }
   };
 
   const enhancers = {
     fastHarvest:   { name: 'Hızlı Hasat Güçlendirici', description: 'Ekinlerin olgunlaşma süresi %20 azalır.', price: 5000 },
-    fertileSoil:   { name: 'Verimli Toprak',           description: 'Hasattan elde edilen para %20 artar.', price: 9000 },
-    richSeed:      { name: 'Zengin Tohum',             description: 'Hasatta %30 ihtimalle +1 ek ürün verir.', price: 12000 },
-    freshKeeper:   { name: 'Tazelik Koruyucu',         description: 'Bozulma süresini 48 saate çıkarır.', price: 8000 }
+    fertileSoil:   { name: 'Verimli Toprak', description: 'Hasattan elde edilen para %20 artar.', price: 9000 },
+    richSeed:      { name: 'Zengin Tohum', description: 'Hasatta %30 ihtimalle +1 ek ürün verir.', price: 12000 },
+    freshKeeper:   { name: 'Tazelik Koruyucu', description: 'Bozulma süresini 48 saate çıkarır.', price: 8000 }
   };
 
   const animals = {
@@ -396,9 +390,6 @@
   let marketPrices = {};
   let previousMarketPrices = {};
   let marketLastUpdatedDay = null;
-
-  const SAVE_KEY = 'feyza_ciftligi_save_v2';
-  const FARM_NAME_KEY = 'feyza_ciftligi_farm_name';
 
   function getCurrentGameDay() {
     const now = new Date();
@@ -521,7 +512,6 @@
     }
 
     if(currentFarmPage === farmPagesCount - 2) {
-      // 3. sayfa hayvanlar (index 3 - 0-based)
       farmEl.style.display = 'none';
       bugFarmEl.style.display = 'none';
       animalFarmEl.style.display = 'flex';
@@ -639,7 +629,21 @@
       harvestSpan.className = 'harvest-status';
 
       if(count > 0) {
-        harvestSpan.textContent = animalHarvestReady[key] ? 'Hasat hazır!' : '';
+        if(animalHarvestReady[key]) {
+          harvestSpan.textContent = 'Hasat hazır!';
+        } else {
+          // Kalan süreyi göster
+          const now = Date.now();
+          const elapsed = now - animalLastHarvest[key];
+          const remaining = MS_IN_HALF_HOUR - elapsed;
+          if(remaining > 0) {
+            const min = Math.floor(remaining / 60000);
+            const sec = Math.floor((remaining % 60000) / 1000);
+            harvestSpan.textContent = `Hasat: ${min}:${sec.toString().padStart(2,'0')}`;
+          } else {
+            harvestSpan.textContent = 'Hasat hazır!';
+          }
+        }
       } else {
         harvestSpan.textContent = '';
       }
@@ -654,7 +658,6 @@
           return;
         }
         if(animalHarvestReady[key]) {
-          // Hasat yap
           const totalIncome = count * animal.productPrice;
           money += totalIncome;
           animalHarvestReady[key] = false;
@@ -709,12 +712,9 @@
     Object.keys(ownedAnimals).forEach(key => {
       if(ownedAnimals[key] > 0) {
         if(animalLastHarvest[key] === 0) {
-          // Henüz hiç hasat yapılmamışsa, hasat hazır olmasın hemen
           animalHarvestReady[key] = false;
         } else {
-          if(now - animalLastHarvest[key] >= MS_IN_HALF_HOUR) {
-            animalHarvestReady[key] = true;
-          }
+          animalHarvestReady[key] = (now - animalLastHarvest[key]) >= MS_IN_HALF_HOUR;
         }
       } else {
         animalHarvestReady[key] = false;
@@ -1129,7 +1129,7 @@
         previousMarketPrices,
         marketLastUpdatedDay
       };
-      localStorage.setItem(SAVE_KEY, JSON.stringify(saveData));
+      localStorage.setItem('feyza_ciftligi_save_v2', JSON.stringify(saveData));
     } catch(e) {
       console.error('Otomatik kaydetme başarısız:', e);
     }
@@ -1137,7 +1137,7 @@
 
   function loadGameAuto() {
     try {
-      const data = localStorage.getItem(SAVE_KEY);
+      const data = localStorage.getItem('feyza_ciftligi_save_v2');
       if(!data) return false;
       const saveData = JSON.parse(data);
 
@@ -1187,8 +1187,8 @@
 
   newGameBtn.addEventListener('click', () => {
     if(confirm('Yeni oyuna başlamak istediğine emin misin? Tüm kayıtların silinecek!')) {
-      localStorage.removeItem(SAVE_KEY);
-      localStorage.removeItem(FARM_NAME_KEY);
+      localStorage.removeItem('feyza_ciftligi_save_v2');
+      localStorage.removeItem('feyza_ciftligi_farm_name');
       localStorage.removeItem("feyza_ciftligi_first_play_date");
       money = 100;
       seeds = { corn: 5, tomato: 5, carrot: 2, wheat: 1, pepper: 1 };
@@ -1243,7 +1243,7 @@
   });
 
   function getFarmName() {
-    return localStorage.getItem(FARM_NAME_KEY);
+    return localStorage.getItem('feyza_ciftligi_farm_name');
   }
 
   function askFarmName(forceAsk = false) {
@@ -1253,7 +1253,7 @@
     name = name.trim();
     if(name.length === 0) name = "Feyza'nın Çiftliği";
     if(!name.endsWith('Çiftliği')) name = `${name} Çiftliği`;
-    localStorage.setItem(FARM_NAME_KEY, name);
+    localStorage.setItem('feyza_ciftligi_farm_name', name);
     return name;
   }
 
