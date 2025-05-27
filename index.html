@@ -17,10 +17,14 @@
     justify-content: center;
     align-items: flex-start;
     gap: 20px;
+    max-width: 480px;
+    margin-left: auto;
+    margin-right: auto;
   }
   #leftPanel {
     flex: none;
-    width: 450px;
+    width: 100%;
+    max-width: 450px;
     text-align: center;
   }
   #info { font-size: 18px; margin-bottom: 12px; }
@@ -51,7 +55,7 @@
   .plot {
     width: 80px; height: 80px; background: #7b4f24;
     border-radius: 8px; cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
     font-weight: bold; color: white;
     box-shadow: 0 0 4px #000000aa;
     transition: background 0.3s; font-size: 30px;
@@ -102,6 +106,7 @@
     margin: 6px 0; padding: 8px 12px; border-radius: 6px;
     cursor: pointer; font-weight: bold; font-size: 16px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    transition: background-color 0.3s;
   }
   #marketModal .seedBtn:disabled, #marketModal .bugBtn:disabled, #marketModal .enhancerBtn:disabled {
     background: #c8e6c9; color: #888; cursor: not-allowed;
@@ -129,54 +134,16 @@
     margin-left: 6px;
     font-weight: bold;
   }
-  #rightPanel {
-    width: 220px;
-    max-height: 420px;
-    background: #c8e6c9;
-    border-radius: 12px;
-    padding: 15px;
-    overflow-y: auto;
-    box-shadow: 0 0 10px #999;
-  }
-  #rightPanel h3 {
-    margin-top: 0; margin-bottom: 10px;
-    color: #33691e;
-  }
-  .time-bar-container {
-    margin-bottom: 12px;
-    text-align: left;
-  }
-  .time-bar-label {
-    font-weight: bold;
-    font-size: 16px;
-    margin-bottom: 4px;
-    color: #1b5e20;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  .time-bar {
-    width: 100%;
-    height: 18px;
-    background-color: #7b4f24;
-    border-radius: 9px;
-    overflow: hidden;
-    box-shadow: inset 0 0 5px #00000066;
-  }
-  .time-bar-fill {
-    height: 100%;
-    background-color: #4caf50;
-    border-radius: 9px 0 0 9px;
-    transition: width 0.5s ease;
-  }
-  /* --- MOBİL DESTEK: Responsive düzen --- */
   @media (max-width: 650px) {
     body {
       flex-direction: column;
       padding: 8px;
       gap: 8px;
+      max-width: 100%;
+      margin-left: 0;
+      margin-right: 0;
     }
-    #leftPanel, #rightPanel {
+    #leftPanel {
       width: 100%;
       max-width: 100vw;
       min-width: unset;
@@ -247,11 +214,6 @@
   </div>
 </div>
 
-<div id="rightPanel">
-  <h3>Ekin Hasat Süreleri</h3>
-  <div id="timeBarsContainer"></div>
-</div>
-
 <div id="marketOverlay"></div>
 
 <div id="marketModal">
@@ -308,7 +270,6 @@
   const marketPricesModal = document.getElementById('marketPricesModal');
   const marketPricesList = document.getElementById('marketPricesList');
   const closeMarketPricesBtn = document.getElementById('closeMarketPricesBtn');
-  const timeBarsContainer = document.getElementById('timeBarsContainer');
   const newGameBtn = document.getElementById('newGameBtn');
   const farmTitle = document.getElementById('farmTitle');
 
@@ -316,7 +277,6 @@
   const farmSize = 5;
   const MS_IN_MINUTE = 60000;
 
-  // Gelişmiş süreler isteğe uygun!
   const crops = {
     corn:    { name: 'Mısır',     growTimeMinutes: 20,  price: 15, emoji: '🌽', seedPrice: 10 },
     tomato:  { name: 'Domates',   growTimeMinutes: 16,  price: 10, emoji: '🍅', seedPrice: 8 },
@@ -326,11 +286,11 @@
   };
 
   const flowers = {
-    rose:      { name: 'Gül',      growTimeMinutes: 8,  price: 11, emoji: '🌹', seedPrice: 12 },
-    tulip:     { name: 'Lale',     growTimeMinutes: 7,  price: 10, emoji: '🌷', seedPrice: 10 },
-    daisy:     { name: 'Papatya',  growTimeMinutes: 5,  price: 11, emoji: '🌼', seedPrice: 8 },
-    sunflower: { name: 'Ayçiçeği', growTimeMinutes: 9,  price: 12, emoji: '🌻', seedPrice: 13 },
-    orchid:    { name: 'Orkide',   growTimeMinutes: 10, price: 13, emoji: '💐', seedPrice: 20 }
+    rose:      { name: 'Gül',      growTimeMinutes: 8,  price: 11, emoji: '🌹', seedPrice: 9 },
+    tulip:     { name: 'Lale',     growTimeMinutes: 7,  price: 10, emoji: '🌷', seedPrice: 9 },
+    daisy:     { name: 'Papatya',  growTimeMinutes: 5,  price: 11, emoji: '🌼', seedPrice: 9 },
+    sunflower: { name: 'Ayçiçeği', growTimeMinutes: 9,  price: 12, emoji: '🌻', seedPrice: 15 },
+    orchid:    { name: 'Orkide',   growTimeMinutes: 10, price: 13, emoji: '💐', seedPrice: 9 }
   };
 
   const bugs = {
@@ -343,7 +303,6 @@
     mantis:      { name: 'Sinek Kapan',  emoji: '🦗',  price: 1400 }
   };
 
-  // Enerjiyle ilgili her şey kaldırıldı! YENİ güçlendirmeler burada:
   const enhancers = {
     fastHarvest:   { name: 'Hızlı Hasat Güçlendirici', description: 'Ekinlerin olgunlaşma süresi %20 azalır.', price: 5000 },
     fertileSoil:   { name: 'Verimli Toprak',           description: 'Hasattan elde edilen para %20 artar.', price: 9000 },
@@ -386,21 +345,20 @@
   const SAVE_KEY = 'feyza_ciftligi_save_v2';
   const FARM_NAME_KEY = 'feyza_ciftligi_farm_name';
 
-  // GÜN SİSTEMİ (GERÇEK GÜNLÜK)
   function getCurrentGameDay() {
     const now = new Date();
     return `${now.getFullYear()}-${(now.getMonth()+1).toString().padStart(2,"0")}-${now.getDate().toString().padStart(2,"0")}`;
   }
 
-  // Piyasa sadece gün değişince update olmalı
   function updateMarketPrices() {
     const currentDay = getCurrentGameDay();
     if(currentDay === marketLastUpdatedDay) return;
     marketLastUpdatedDay = currentDay;
 
     previousMarketPrices = {...marketPrices};
-    Object.keys(allProducts).forEach(key => {
-      let basePrice = allProducts[key].price;
+    
+    Object.keys(crops).forEach(key => {
+      let basePrice = crops[key].price;
       let change = 0;
 
       if(Math.random() < 0.10) change = -0.10;
@@ -408,6 +366,11 @@
       else change = (Math.random() * 0.6) - 0.10;
 
       let price = Math.max(1, Math.floor(basePrice * (1 + change)));
+      marketPrices[key] = price;
+    });
+
+    Object.keys(flowers).forEach(key => {
+      const price = Math.floor(Math.random() * (8 - 4 + 1)) + 4;
       marketPrices[key] = price;
     });
   }
@@ -436,7 +399,8 @@
       const p = document.createElement('p');
       const product = allProducts[key];
       const emoji = profitEmoji(marketPrices[key], previousMarketPrices[key]);
-      p.innerHTML = `${product.emoji} ${product.name}: ${marketPrices[key]}₺ (Normal: ${product.price}₺) <span class="profit-emoji">${emoji}</span>`;
+      const seedPrice = product.seedPrice !== undefined ? product.seedPrice : product.price;
+      p.innerHTML = `${product.emoji} ${product.name}: ${marketPrices[key]}₺ (Normal: ${seedPrice}₺) <span class="profit-emoji">${emoji}</span>`;
       marketPricesList.appendChild(p);
     }
   }
@@ -496,7 +460,6 @@
       prevPageBtn.disabled = false;
       nextPageBtn.disabled = true;
       drawBugs();
-      updateTimeBars();
       return;
     }
 
@@ -523,7 +486,23 @@
           plotEl.classList.add('planted');
         }
         const emoji = currentFarmPage === 1 ? flowers[plot.cropType]?.emoji || '' : crops[plot.cropType]?.emoji || '';
-        plotEl.textContent = emoji;
+
+        const emojiSpan = document.createElement('span');
+        emojiSpan.textContent = emoji;
+        emojiSpan.style.display = 'block';
+        emojiSpan.style.fontSize = currentFarmPage === 1 ? '36px' : '40px';
+        emojiSpan.style.lineHeight = '1';
+
+        const timeSpan = document.createElement('span');
+        timeSpan.style.display = 'block';
+        timeSpan.style.fontSize = '14px';
+        timeSpan.style.marginTop = '2px';
+        timeSpan.style.fontWeight = 'bold';
+        timeSpan.style.color = '#c5e1a5';
+        timeSpan.dataset.plotIndex = i;
+
+        plotEl.appendChild(emojiSpan);
+        plotEl.appendChild(timeSpan);
       }
 
       plotEl.onclick = () => {
@@ -565,10 +544,41 @@
     pageIndicator.textContent = `Tarla ${currentFarmPage + 1} / ${farmPagesCount}`;
     prevPageBtn.disabled = currentFarmPage === 0;
     nextPageBtn.disabled = currentFarmPage === farmPagesCount - 1;
-    updateTimeBars();
+
+    updateTimeInPlots();
   }
 
-  // YENİ güçlendirmelerle tam fonksiyonel bitki ekimi ve hasat sistemi
+  function updateTimeInPlots() {
+    const farm = farms[currentFarmPage];
+    const now = Date.now();
+    const plotTimeSpans = farmEl.querySelectorAll('span[data-plot-index]');
+    plotTimeSpans.forEach(span => {
+      const i = parseInt(span.dataset.plotIndex);
+      const plot = farm[i];
+      if(!plot || plot.state !== 'planted' || !plot.plantedAt) {
+        span.textContent = '';
+        return;
+      }
+      const growTimeMs = getEffectiveGrowTime(plot) * MS_IN_MINUTE;
+      const elapsedMs = now - plot.plantedAt;
+      const remainingMs = growTimeMs - elapsedMs;
+
+      if(isPlotSpoiled(plot)) {
+        span.textContent = 'BOZULDU!';
+        span.style.color = '#b71c1c';
+      } else if(isPlotReady(plot)) {
+        span.textContent = 'Hasat hazır!';
+        span.style.color = '#aed581';
+      } else {
+        const remSec = Math.max(0, Math.floor(remainingMs / 1000));
+        const remMin = Math.floor(remSec / 60);
+        const remS = remSec % 60;
+        span.textContent = `${remMin}:${remS.toString().padStart(2,'0')}`;
+        span.style.color = '#c5e1a5';
+      }
+    });
+  }
+
   function isPlotReady(plot) {
     if(plot.state !== 'planted') return false;
     if(!plot.plantedAt) return false;
@@ -588,7 +598,6 @@
     const now = Date.now();
     const elapsedMinutes = (now - plot.plantedAt) / MS_IN_MINUTE;
     const readyTime = getEffectiveGrowTime(plot);
-    // Bozulma süresi: default 24 saat, freshKeeper varsa 48 saat
     const maxHours = purchasedEnhancers.freshKeeper ? 48 : 24;
     const spoilMinutes = maxHours * 60;
     return elapsedMinutes >= (readyTime + spoilMinutes);
@@ -659,7 +668,6 @@
       }
     }
 
-    // Zengin Tohum ile ekstra ürün
     let extra = 0;
     if(purchasedEnhancers.richSeed && Math.random() < 0.3) {
       extra = 1;
@@ -703,30 +711,13 @@
       btn.onclick = () => buySeed(key);
       marketSeedsDiv.appendChild(btn);
     }
-  }
-
-  function renderMarketBugs() {
-    marketBugsDiv.innerHTML = '';
-    for(const key in bugs) {
+    for(const key in flowers) {
       const btn = document.createElement('button');
-      btn.classList.add('bugBtn');
-      btn.textContent = `${bugs[key].emoji} ${bugs[key].name} - ${bugs[key].price}₺`;
-      btn.disabled = purchasedBugs[key] || (money !== Infinity && money < bugs[key].price);
-      btn.onclick = () => buyBug(key);
-      marketBugsDiv.appendChild(btn);
-    }
-  }
-
-  function renderMarketEnhancers() {
-    marketEnhancersDiv.innerHTML = '';
-    for(const key in enhancers) {
-      const btn = document.createElement('button');
-      btn.classList.add('enhancerBtn');
-      btn.textContent = `${enhancers[key].name} - ${enhancers[key].price}₺`;
-      btn.disabled = purchasedEnhancers[key] || (money !== Infinity && money < enhancers[key].price);
-      btn.title = enhancers[key].description;
-      btn.onclick = () => buyEnhancer(key);
-      marketEnhancersDiv.appendChild(btn);
+      btn.classList.add('seedBtn');
+      btn.textContent = `${flowers[key].emoji} ${flowers[key].name} Tohumu - ${flowers[key].seedPrice}₺`;
+      btn.disabled = money !== Infinity && money < flowers[key].seedPrice;
+      btn.onclick = () => buySeedFlower(key);
+      marketSeedsDiv.appendChild(btn);
     }
   }
 
@@ -740,8 +731,42 @@
       drawInventory();
       renderMarketSeeds();
       saveGameAuto();
+      const btns = marketSeedsDiv.querySelectorAll('button');
+      btns.forEach(btn => {
+        if(btn.textContent.includes(crops[seedKey].name)) flashButton(btn);
+      });
     } else {
       showMessage('Paran yetmiyor!');
+    }
+  }
+  function buySeedFlower(seedKey) {
+    if(money === Infinity || money >= flowers[seedKey].seedPrice) {
+      if(money !== Infinity) money -= flowers[seedKey].seedPrice;
+      flowerSeeds[seedKey]++;
+      sounds.buy.play();
+      showMessage(`${flowers[seedKey].name} tohumu satın aldın.`);
+      updateInfo();
+      drawInventory();
+      renderMarketSeeds();
+      saveGameAuto();
+      const btns = marketSeedsDiv.querySelectorAll('button');
+      btns.forEach(btn => {
+        if(btn.textContent.includes(flowers[seedKey].name)) flashButton(btn);
+      });
+    } else {
+      showMessage('Paran yetmiyor!');
+    }
+  }
+
+  function renderMarketBugs() {
+    marketBugsDiv.innerHTML = '';
+    for(const key in bugs) {
+      const btn = document.createElement('button');
+      btn.classList.add('bugBtn');
+      btn.textContent = `${bugs[key].emoji} ${bugs[key].name} - ${bugs[key].price}₺`;
+      btn.disabled = purchasedBugs[key] || (money !== Infinity && money < bugs[key].price);
+      btn.onclick = () => buyBug(key);
+      marketBugsDiv.appendChild(btn);
     }
   }
 
@@ -759,8 +784,25 @@
       renderMarketBugs();
       drawBugs();
       saveGameAuto();
+      const btns = marketBugsDiv.querySelectorAll('button');
+      btns.forEach(btn => {
+        if(btn.textContent.includes(bugs[bugKey].name)) flashButton(btn);
+      });
     } else {
       showMessage('Paran yetmiyor!');
+    }
+  }
+
+  function renderMarketEnhancers() {
+    marketEnhancersDiv.innerHTML = '';
+    for(const key in enhancers) {
+      const btn = document.createElement('button');
+      btn.classList.add('enhancerBtn');
+      btn.textContent = `${enhancers[key].name} - ${enhancers[key].price}₺`;
+      btn.disabled = purchasedEnhancers[key] || (money !== Infinity && money < enhancers[key].price);
+      btn.title = enhancers[key].description;
+      btn.onclick = () => buyEnhancer(key);
+      marketEnhancersDiv.appendChild(btn);
     }
   }
 
@@ -778,9 +820,21 @@
       renderMarketEnhancers();
       drawEnhancerList();
       saveGameAuto();
+      const btns = marketEnhancersDiv.querySelectorAll('button');
+      btns.forEach(btn => {
+        if(btn.textContent.includes(enhancers[key].name)) flashButton(btn);
+      });
     } else {
       showMessage('Paran yetmiyor!');
     }
+  }
+
+  function flashButton(btn) {
+    const originalBg = btn.style.backgroundColor;
+    btn.style.backgroundColor = '#4caf50';
+    setTimeout(() => {
+      btn.style.backgroundColor = originalBg;
+    }, 1000);
   }
 
   function updateSeedInventory() {
@@ -947,82 +1001,6 @@
     }, 3000);
   }
 
-  function updateTimeBars() {
-    timeBarsContainer.innerHTML = '';
-    if(currentFarmPage === farmPagesCount - 1) return;
-
-    const farm = farms[currentFarmPage];
-    const sourceCrops = currentFarmPage === 1 ? flowers : crops;
-
-    farm.forEach((plot, index) => {
-      if(plot.state === 'planted' && plot.plantedAt) {
-        const now = Date.now();
-        const growTime = getEffectiveGrowTime(plot);
-        const elapsedMs = now - plot.plantedAt;
-        const totalMs = growTime * MS_IN_MINUTE;
-        const remainingMs = totalMs - elapsedMs;
-        const percent = Math.min(100, Math.max(0, (elapsedMs / totalMs) * 100));
-        const remainingSec = Math.max(0, Math.floor(remainingMs / 1000));
-        const min = Math.floor(remainingSec / 60);
-        const sec = remainingSec % 60;
-
-        // Bozulmaya kalan zamanı hesapla
-        let spoilLeft = 0;
-        if (isPlotReady(plot)) {
-          const spoilMs = ((purchasedEnhancers.freshKeeper ? 48 : 24) * 60 * 60000);
-          const elapsedSinceReady = elapsedMs - totalMs;
-          spoilLeft = Math.max(0, Math.floor((spoilMs - elapsedSinceReady)/1000));
-        }
-
-        const container = document.createElement('div');
-        container.className = 'time-bar-container';
-
-        const label = document.createElement('div');
-        label.className = 'time-bar-label';
-        label.textContent = `${sourceCrops[plot.cropType].emoji} ${sourceCrops[plot.cropType].name} (#${index + 1})`;
-
-        const timeText = document.createElement('span');
-        if(isPlotSpoiled(plot)) {
-          timeText.textContent = 'BOZULDU!';
-          label.style.color = '#b71c1c';
-        } else if(isPlotReady(plot)) {
-          if(spoilLeft > 0) {
-            const spoilH = Math.floor(spoilLeft/3600);
-            const spoilM = Math.floor((spoilLeft%3600)/60);
-            timeText.textContent = `Hasat Hazır / Bozulmaya: ${spoilH}sa ${spoilM}dk`;
-          } else {
-            timeText.textContent = 'Hasat Hazır!';
-          }
-        } else {
-          timeText.textContent = remainingMs <= 0 ? 'Hasat hazır!' : `${min}:${sec.toString().padStart(2,'0')}`;
-        }
-        label.appendChild(timeText);
-
-        const bar = document.createElement('div');
-        bar.className = 'time-bar';
-
-        const fill = document.createElement('div');
-        fill.className = 'time-bar-fill';
-        fill.style.width = `${percent}%`;
-
-        bar.appendChild(fill);
-        container.appendChild(label);
-        container.appendChild(bar);
-
-        timeBarsContainer.appendChild(container);
-      }
-    });
-  }
-
-  function periodicUpdate() {
-    updateInfo();
-    drawFarm();
-    updateTimeBars();
-    updateMarketPrices();
-    saveGameAuto();
-    setTimeout(periodicUpdate, 1000);
-  }
-
   newGameBtn.addEventListener('click', () => {
     if(confirm('Yeni oyuna başlamak istediğine emin misin? Tüm kayıtların silinecek!')) {
       localStorage.removeItem(SAVE_KEY);
@@ -1077,7 +1055,6 @@
     }
   });
 
-  // TARLA ADI SİSTEMİ
   function getFarmName() {
     return localStorage.getItem(FARM_NAME_KEY);
   }
@@ -1093,12 +1070,19 @@
     return name;
   }
 
-  // İlk girişte tarla adı sor
   if(!getFarmName()) {
     askFarmName();
   }
 
-  // Oyun yükle/kaydet ve başlat
+  function periodicUpdate() {
+    updateInfo();
+    drawFarm();
+    updateTimeInPlots();
+    updateMarketPrices();
+    saveGameAuto();
+    setTimeout(periodicUpdate, 1000);
+  }
+
   const loaded = loadGameAuto();
   if(!loaded) saveGameAuto();
   periodicUpdate();
