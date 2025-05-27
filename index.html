@@ -442,8 +442,11 @@
   function renderMarketPrices() {
     marketPricesList.innerHTML = '';
     for(const key in marketPrices) {
+      // Sadece sebzeler gösterilecek
+      if(!(key in crops)) continue;
+
       const p = document.createElement('p');
-      const product = allProducts[key];
+      const product = crops[key];
       const emoji = profitEmoji(marketPrices[key], previousMarketPrices[key]);
       const seedPrice = product.seedPrice !== undefined ? product.seedPrice : product.price;
       p.innerHTML = `${product.emoji} ${product.name}: ${marketPrices[key]}₺ (Normal: ${seedPrice}₺) <span class="profit-emoji">${emoji}</span>`;
@@ -804,7 +807,8 @@
 
     let gain;
     if(currentFarmPage === 1) {
-      gain = Math.floor(cropData.price * 1.10);
+      // Çiçek hasat kazancı tohum fiyatından minimum 20₺ fazla olacak
+      gain = Math.max(cropData.seedPrice + 20, Math.floor(cropData.price * 1.10));
     } else {
       gain = marketPrices[cropKey] || cropData.price;
       if(purchasedEnhancers.fertileSoil) {
