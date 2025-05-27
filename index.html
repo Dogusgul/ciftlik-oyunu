@@ -320,9 +320,10 @@
 
 <script>
   const sounds = {
-    plant: new Audio('data:audio/wav;base64,UklGRmQAAABXQVZFZm10IBAAAAABAAEAgD4AAIA+AAABAAgAZGF0YVAAAABZ'),
-    harvest: new Audio('data:audio/wav;base64,UklGRjIAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAABAAgAZGF0YYAAAABZ'),
-    buy: new Audio('data:audio/wav;base64,UklGRlIAAABXQVZFZm10IBAAAAABAAEAgD4AAIA+AAABAAgAZGF0YRAAAA==')
+    plant: new Audio('sounds/plant.wav'),
+    harvest: new Audio('sounds/harvest.wav'),
+    buy: new Audio('sounds/buy.wav'),
+    pageChange: new Audio('sounds/pageChange.wav')
   };
 
   const GAME_VERSION = '2.0.0';
@@ -786,7 +787,9 @@
       const btn = document.createElement('button');
       btn.textContent = `Satın Al: ${product.name} - ${product.buyPrice}₺`;
       btn.disabled = !(money === Infinity || money >= product.buyPrice) || !storeRented;
-      btn.onclick = () => buyStoreItem(key);
+      btn.onclick = () => {
+        buyStoreItem(key);
+      };
       storeMarketItemsDiv.appendChild(btn);
     }
 
@@ -1285,6 +1288,8 @@
     selectedSeedCategory = (currentFarmPage === 1) ? 'flowers' : 'crops';
     drawInventory();
     drawFarm();
+
+    sounds.pageChange.play(); // Sayfa değişirken ses çal
   }
 
   function drawBugs() {
@@ -1509,14 +1514,6 @@
       location.reload();
     }
   });
-
-  function flashButton(btn) {
-    const originalBg = btn.style.backgroundColor;
-    btn.style.backgroundColor = '#4caf50';
-    setTimeout(() => {
-      btn.style.backgroundColor = originalBg;
-    }, 1000);
-  }
 
   function getFarmName() {
     return localStorage.getItem('feyza_ciftligi_farm_name');
