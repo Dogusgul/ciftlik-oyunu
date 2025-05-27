@@ -100,7 +100,7 @@
   #marketModal h2, #marketModal h3, #marketPricesModal h2 {
     margin-top: 0; margin-bottom: 10px;
   }
-  #marketModal .seedBtn, #marketModal .bugBtn, #marketModal .enhancerBtn {
+  #marketModal .seedBtn, #marketModal .bugBtn, #marketModal .enhancerBtn, #marketModal .animalBtn {
     display: flex; align-items: center; justify-content: space-between;
     background: #81c784; color: #004d00;
     margin: 6px 0; padding: 8px 12px; border-radius: 6px;
@@ -108,7 +108,7 @@
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     transition: background-color 0.3s;
   }
-  #marketModal .seedBtn:disabled, #marketModal .bugBtn:disabled, #marketModal .enhancerBtn:disabled {
+  #marketModal .seedBtn:disabled, #marketModal .bugBtn:disabled, #marketModal .enhancerBtn:disabled, #marketModal .animalBtn:disabled {
     background: #c8e6c9; color: #888; cursor: not-allowed;
     box-shadow: none;
   }
@@ -130,9 +130,44 @@
     user-select: none; cursor: pointer;
     transition: transform 0.5s ease;
   }
-  .profit-emoji {
-    margin-left: 6px;
+  #animalFarm {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  .animal {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+    background: #81c784;
+    border-radius: 10px;
+    padding: 12px 20px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    width: 100%;
+    max-width: 320px;
+    color: #004d00;
     font-weight: bold;
+    font-size: 24px;
+    position: relative;
+  }
+  .animal-emoji {
+    font-size: 48px;
+  }
+  .animal-count {
+    font-size: 18px;
+    margin-top: 6px;
+  }
+  .harvest-status {
+    position: absolute;
+    bottom: 8px;
+    right: 12px;
+    font-weight: bold;
+    color: #aed581;
+    font-size: 14px;
   }
   @media (max-width: 650px) {
     body {
@@ -168,6 +203,10 @@
       height: 210px;
       margin: 0 auto 10px;
     }
+    #animalFarm {
+      width: 98vw;
+      max-width: unset;
+    }
     #pagination button {
       width: 28px;
       font-size: 14px;
@@ -199,13 +238,15 @@
 
   <div id="pagination">
     <button id="prevPageBtn" disabled>←</button>
-    <span id="pageIndicator">Tarla 1 / 3</span>
+    <span id="pageIndicator">Tarla 1 / 4</span>
     <button id="nextPageBtn">→</button>
   </div>
 
   <div id="farm"></div>
 
   <div id="bugFarm" style="display:none;" title="Böcek Tarlası"></div>
+  
+  <div id="animalFarm" style="display:none;"></div>
 
   <div id="controls">
     <button id="openMarketBtn">Market Aç</button>
@@ -224,6 +265,8 @@
   <div id="marketBugs"></div>
   <h3>Güçlendiriciler</h3>
   <div id="marketEnhancers"></div>
+  <h3>Hayvanlar</h3>
+  <div id="marketAnimals"></div>
   <div id="seedInventory">
     <p>Tohumlarınız:</p>
     <ul id="seedList"></ul>
@@ -254,6 +297,7 @@
   const inventoryEl = document.getElementById('inventory');
   const farmEl = document.getElementById('farm');
   const bugFarmEl = document.getElementById('bugFarm');
+  const animalFarmEl = document.getElementById('animalFarm');
   const openMarketBtn = document.getElementById('openMarketBtn');
   const openMarketPricesBtn = document.getElementById('openMarketPricesBtn');
   const marketModal = document.getElementById('marketModal');
@@ -262,6 +306,7 @@
   const marketSeedsDiv = document.getElementById('marketSeeds');
   const marketBugsDiv = document.getElementById('marketBugs');
   const marketEnhancersDiv = document.getElementById('marketEnhancers');
+  const marketAnimalsDiv = document.getElementById('marketAnimals');
   const seedListEl = document.getElementById('seedList');
   const enhancerListEl = document.getElementById('enhancerList');
   const prevPageBtn = document.getElementById('prevPageBtn');
@@ -273,9 +318,10 @@
   const newGameBtn = document.getElementById('newGameBtn');
   const farmTitle = document.getElementById('farmTitle');
 
-  const farmPagesCount = 3;
+  const farmPagesCount = 4;  // 4 sayfa oldu
   const farmSize = 5;
   const MS_IN_MINUTE = 60000;
+  const MS_IN_HALF_HOUR = 1800000;
 
   const crops = {
     corn:    { name: 'Mısır',     growTimeMinutes: 20,  price: 15, emoji: '🌽', seedPrice: 10 },
@@ -310,12 +356,21 @@
     freshKeeper:   { name: 'Tazelik Koruyucu',         description: 'Bozulma süresini 48 saate çıkarır.', price: 8000 }
   };
 
+  const animals = {
+    chicken: { name: 'Tavuk', emoji: '🐔', buyPrice: 300, productPrice: 25 },
+    cow:     { name: 'İnek', emoji: '🐄', buyPrice: 500, productPrice: 50 },
+    goat:    { name: 'Keçi', emoji: '🐐', buyPrice: 1200, productPrice: 120 }
+  };
+
   let money = 100;
 
   let seeds = { corn: 5, tomato: 5, carrot: 2, wheat: 1, pepper: 1 };
   let flowerSeeds = { rose: 3, tulip: 3, daisy: 3, sunflower: 1, orchid: 1 };
   let purchasedBugs = {};
   let purchasedEnhancers = {};
+  let ownedAnimals = { chicken: 0, cow: 0, goat: 0 };
+  let animalHarvestReady = { chicken: false, cow: false, goat: false };
+  let animalLastHarvest = { chicken: 0, cow: 0, goat: 0 };
 
   let farms = [];
   for(let i=0; i<farmPagesCount-1; i++) {
@@ -452,14 +507,28 @@
   function drawFarm() {
     farmEl.innerHTML = '';
     bugFarmEl.style.display = 'none';
+    animalFarmEl.style.display = 'none';
 
     if(currentFarmPage === farmPagesCount - 1) {
       farmEl.style.display = 'none';
       bugFarmEl.style.display = 'block';
+      animalFarmEl.style.display = 'none';
       pageIndicator.textContent = `Tarla ${currentFarmPage + 1} / ${farmPagesCount}`;
       prevPageBtn.disabled = false;
       nextPageBtn.disabled = true;
       drawBugs();
+      return;
+    }
+
+    if(currentFarmPage === farmPagesCount - 2) {
+      // 3. sayfa hayvanlar (index 3 - 0-based)
+      farmEl.style.display = 'none';
+      bugFarmEl.style.display = 'none';
+      animalFarmEl.style.display = 'flex';
+      pageIndicator.textContent = `Tarla ${currentFarmPage + 1} / ${farmPagesCount}`;
+      prevPageBtn.disabled = false;
+      nextPageBtn.disabled = false;
+      drawAnimals();
       return;
     }
 
@@ -548,6 +617,62 @@
     updateTimeInPlots();
   }
 
+  function drawAnimals() {
+    animalFarmEl.innerHTML = '';
+
+    Object.keys(animals).forEach(key => {
+      const animal = animals[key];
+      const count = ownedAnimals[key];
+      const div = document.createElement('div');
+      div.className = 'animal';
+      div.title = animal.name;
+
+      const emojiSpan = document.createElement('span');
+      emojiSpan.className = 'animal-emoji';
+      emojiSpan.textContent = animal.emoji;
+
+      const countSpan = document.createElement('span');
+      countSpan.className = 'animal-count';
+      countSpan.textContent = `Adet: ${count}`;
+
+      const harvestSpan = document.createElement('span');
+      harvestSpan.className = 'harvest-status';
+
+      if(count > 0) {
+        harvestSpan.textContent = animalHarvestReady[key] ? 'Hasat hazır!' : '';
+      } else {
+        harvestSpan.textContent = '';
+      }
+
+      div.appendChild(emojiSpan);
+      div.appendChild(countSpan);
+      div.appendChild(harvestSpan);
+
+      div.onclick = () => {
+        if(count === 0) {
+          showMessage(`${animal.name} satın alınmamış!`);
+          return;
+        }
+        if(animalHarvestReady[key]) {
+          // Hasat yap
+          const totalIncome = count * animal.productPrice;
+          money += totalIncome;
+          animalHarvestReady[key] = false;
+          animalLastHarvest[key] = Date.now();
+          showMessage(`${animal.name} hasat edildi! +${totalIncome}₺`);
+          updateInfo();
+          drawAnimals();
+          saveGameAuto();
+          sounds.harvest.play();
+        } else {
+          showMessage(`${animal.name} için hasat hazır değil.`);
+        }
+      };
+
+      animalFarmEl.appendChild(div);
+    });
+  }
+
   function updateTimeInPlots() {
     const farm = farms[currentFarmPage];
     const now = Date.now();
@@ -575,6 +700,25 @@
         const remS = remSec % 60;
         span.textContent = `${remMin}:${remS.toString().padStart(2,'0')}`;
         span.style.color = '#c5e1a5';
+      }
+    });
+  }
+
+  function updateAnimalHarvestStatus() {
+    const now = Date.now();
+    Object.keys(ownedAnimals).forEach(key => {
+      if(ownedAnimals[key] > 0) {
+        if(animalLastHarvest[key] === 0) {
+          // Henüz hiç hasat yapılmamışsa, hasat hazır olmasın hemen
+          animalHarvestReady[key] = false;
+        } else {
+          if(now - animalLastHarvest[key] >= MS_IN_HALF_HOUR) {
+            animalHarvestReady[key] = true;
+          }
+        }
+      } else {
+        animalHarvestReady[key] = false;
+        animalLastHarvest[key] = 0;
       }
     });
   }
@@ -692,6 +836,7 @@
     renderMarketSeeds();
     renderMarketBugs();
     renderMarketEnhancers();
+    renderMarketAnimals();
     updateSeedInventory();
     drawEnhancerList();
   }
@@ -829,6 +974,38 @@
     }
   }
 
+  function renderMarketAnimals() {
+    marketAnimalsDiv.innerHTML = '';
+    for(const key in animals) {
+      const btn = document.createElement('button');
+      btn.classList.add('animalBtn');
+      btn.textContent = `${animals[key].emoji} ${animals[key].name} - ${animals[key].buyPrice}₺`;
+      btn.disabled = money !== Infinity && money < animals[key].buyPrice;
+      btn.onclick = () => buyAnimal(key);
+      marketAnimalsDiv.appendChild(btn);
+    }
+  }
+
+  function buyAnimal(animalKey) {
+    if(money === Infinity || money >= animals[animalKey].buyPrice) {
+      if(money !== Infinity) money -= animals[animalKey].buyPrice;
+      ownedAnimals[animalKey]++;
+      if(animalLastHarvest[animalKey] === 0) animalLastHarvest[animalKey] = Date.now();
+      sounds.buy.play();
+      showMessage(`${animals[animalKey].name} satın aldın.`);
+      updateInfo();
+      drawAnimals();
+      renderMarketAnimals();
+      saveGameAuto();
+      const btns = marketAnimalsDiv.querySelectorAll('button');
+      btns.forEach(btn => {
+        if(btn.textContent.includes(animals[animalKey].name)) flashButton(btn);
+      });
+    } else {
+      showMessage('Paran yetmiyor!');
+    }
+  }
+
   function flashButton(btn) {
     const originalBg = btn.style.backgroundColor;
     btn.style.backgroundColor = '#4caf50';
@@ -879,7 +1056,7 @@
       currentFarmPage--;
     }
     selectedSeedKey = null;
-    selectedSeedCategory = currentFarmPage === 1 ? 'flowers' : 'crops';
+    selectedSeedCategory = (currentFarmPage === 1) ? 'flowers' : 'crops';
     drawInventory();
     drawFarm();
   }
@@ -943,6 +1120,9 @@
         currentFarmPage,
         purchasedBugs,
         purchasedEnhancers,
+        ownedAnimals,
+        animalHarvestReady,
+        animalLastHarvest,
         selectedSeedCategory,
         selectedSeedKey,
         marketPrices,
@@ -975,6 +1155,9 @@
       currentFarmPage = saveData.currentFarmPage || 0;
       purchasedBugs = saveData.purchasedBugs || {};
       purchasedEnhancers = saveData.purchasedEnhancers || {};
+      ownedAnimals = saveData.ownedAnimals || { chicken: 0, cow: 0, goat: 0 };
+      animalHarvestReady = saveData.animalHarvestReady || { chicken: false, cow: false, goat: false };
+      animalLastHarvest = saveData.animalLastHarvest || { chicken: 0, cow: 0, goat: 0 };
       selectedSeedCategory = saveData.selectedSeedCategory || 'crops';
       selectedSeedKey = saveData.selectedSeedKey || null;
       marketPrices = saveData.marketPrices || {};
@@ -986,6 +1169,7 @@
       drawFarm();
       drawBugs();
       drawEnhancerList();
+      drawAnimals();
       return true;
     } catch(e) {
       showMessage('Yükleme başarısız!');
@@ -1011,6 +1195,9 @@
       flowerSeeds = { rose: 3, tulip: 3, daisy: 3, sunflower: 1, orchid: 1 };
       purchasedBugs = {};
       purchasedEnhancers = {};
+      ownedAnimals = { chicken: 0, cow: 0, goat: 0 };
+      animalHarvestReady = { chicken: false, cow: false, goat: false };
+      animalLastHarvest = { chicken: 0, cow: 0, goat: 0 };
       farms = [];
       for(let i=0; i<farmPagesCount-1; i++) {
         let pageFarm = [];
@@ -1078,6 +1265,8 @@
     updateInfo();
     drawFarm();
     updateTimeInPlots();
+    updateAnimalHarvestStatus();
+    drawAnimals();
     updateMarketPrices();
     saveGameAuto();
     setTimeout(periodicUpdate, 1000);
