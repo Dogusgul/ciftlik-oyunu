@@ -82,14 +82,14 @@
     height: 24px; font-weight: bold; color: #2e7d32;
     margin-bottom: 12px; min-height: 24px;
   }
-  #marketModal, #marketOverlay, #marketPricesModal {
+  #marketModal, #marketOverlay, #marketPricesModal, #storeModal {
     user-select: none;
   }
   #marketOverlay {
     display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
     background: rgba(0,0,0,0.3); z-index: 900;
   }
-  #marketModal, #marketPricesModal {
+  #marketModal, #marketPricesModal, #storeModal {
     display: none; position: fixed; top: 50%; left: 50%;
     width: 380px; background: white; border-radius: 10px;
     box-shadow: 0 0 15px rgba(0,0,0,0.3);
@@ -97,10 +97,10 @@
     padding: 20px; z-index: 1000; max-height: 80vh;
     overflow-y: auto;
   }
-  #marketModal h2, #marketModal h3, #marketPricesModal h2 {
+  #marketModal h2, #marketModal h3, #marketPricesModal h2, #storeModal h2 {
     margin-top: 0; margin-bottom: 10px;
   }
-  #marketModal .seedBtn, #marketModal .bugBtn, #marketModal .enhancerBtn, #marketModal .animalBtn {
+  #marketModal .seedBtn, #marketModal .bugBtn, #marketModal .enhancerBtn, #marketModal .animalBtn, #storeModal button, #storeModal #rentStoreBtn {
     display: flex; align-items: center; justify-content: space-between;
     background: #81c784; color: #004d00;
     margin: 6px 0; padding: 8px 12px; border-radius: 6px;
@@ -108,7 +108,7 @@
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     transition: background-color 0.3s;
   }
-  #marketModal .seedBtn:disabled, #marketModal .bugBtn:disabled, #marketModal .enhancerBtn:disabled, #marketModal .animalBtn:disabled {
+  #marketModal .seedBtn:disabled, #marketModal .bugBtn:disabled, #marketModal .enhancerBtn:disabled, #marketModal .animalBtn:disabled, #storeModal button:disabled, #storeModal #rentStoreBtn:disabled {
     background: #c8e6c9; color: #888; cursor: not-allowed;
     box-shadow: none;
   }
@@ -163,6 +163,36 @@
     margin-top: 4px;
     user-select: none;
   }
+  #storePage {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  #storeRentBtn {
+    margin-bottom: 15px;
+  }
+  #storeMarketItems button {
+    width: 100%;
+  }
+  #customers {
+    margin-top: 20px;
+  }
+  .customer {
+    background-color: #81c784;
+    color: #004d00;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    margin: 6px 0;
+    user-select: none;
+  }
+  .order {
+    font-weight: normal;
+    font-size: 14px;
+  }
   @media (max-width: 650px) {
     body {
       flex-direction: column;
@@ -210,7 +240,7 @@
       font-size: 14px;
       padding: 8px 6px;
     }
-    #marketModal, #marketPricesModal {
+    #marketModal, #marketPricesModal, #storeModal {
       width: 98vw !important;
       min-width: unset;
       max-width: 420px;
@@ -232,7 +262,7 @@
 
   <div id="pagination">
     <button id="prevPageBtn" disabled>←</button>
-    <span id="pageIndicator">Tarla 1 / 4</span>
+    <span id="pageIndicator">Tarla 1 / 5</span>
     <button id="nextPageBtn">→</button>
   </div>
 
@@ -241,6 +271,12 @@
   <div id="bugFarm" style="display:none;" title="Böcek Tarlası"></div>
   
   <div id="animalFarm" style="display:none;"></div>
+  
+  <div id="storePage" style="display:none;">
+    <button id="storeRentBtn">Dükkan Kirala - 1000₺</button>
+    <div id="storeMarketItems"></div>
+    <div id="customers"></div>
+  </div>
 
   <div id="controls">
     <button id="openMarketBtn">Market Aç</button>
@@ -276,8 +312,13 @@
   <button id="closeMarketPricesBtn" style="margin-top:15px;">Kapat</button>
 </div>
 
+<div id="storeModal" style="display:none;">
+  <h2>Dükkan Marketi</h2>
+  <div id="storeMarketItems"></div>
+  <button id="closeStoreBtn" style="margin-top:15px;">Kapat</button>
+</div>
+
 <script>
-  // Sesler
   const sounds = {
     plant: new Audio('data:audio/wav;base64,UklGRmQAAABXQVZFZm10IBAAAAABAAEAgD4AAIA+AAABAAgAZGF0YVAAAABZ'),
     harvest: new Audio('data:audio/wav;base64,UklGRjIAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAABAAgAZGF0YYAAAABZ'),
@@ -292,6 +333,10 @@
   const farmEl = document.getElementById('farm');
   const bugFarmEl = document.getElementById('bugFarm');
   const animalFarmEl = document.getElementById('animalFarm');
+  const storePageEl = document.getElementById('storePage');
+  const storeRentBtn = document.getElementById('storeRentBtn');
+  const storeMarketItemsDiv = document.getElementById('storeMarketItems');
+  const customersEl = document.getElementById('customers');
   const openMarketBtn = document.getElementById('openMarketBtn');
   const openMarketPricesBtn = document.getElementById('openMarketPricesBtn');
   const marketModal = document.getElementById('marketModal');
@@ -311,11 +356,14 @@
   const closeMarketPricesBtn = document.getElementById('closeMarketPricesBtn');
   const newGameBtn = document.getElementById('newGameBtn');
   const farmTitle = document.getElementById('farmTitle');
+  const storeModal = document.getElementById('storeModal');
+  const closeStoreBtn = document.getElementById('closeStoreBtn');
 
-  const farmPagesCount = 4;
+  const farmPagesCount = 5;
   const farmSize = 5;
   const MS_IN_MINUTE = 60000;
   const MS_IN_HALF_HOUR = 1800000;
+  const MS_IN_6_HOURS = 21600000;
 
   const crops = {
     corn:    { name: 'Mısır', growTimeMinutes: 20, price: 15, emoji: '🌽', seedPrice: 10 },
@@ -356,6 +404,16 @@
     goat:    { name: 'Keçi', emoji: '🐐', buyPrice: 1200, productPrice: 120 }
   };
 
+  // Dükkan ürünleri
+  const storeProducts = {
+    danaEti: { name: 'Dana Eti', buyPrice: 10 },
+    hamburgerEkmegi: { name: 'Hamburger Ekmeği', buyPrice: 10 },
+    sosis: { name: 'Sosis', buyPrice: 5 },
+    sosisliEkmegi: { name: 'Sosisli Ekmeği', buyPrice: 2 },
+    ayran: { name: 'Ayran', buyPrice: 5, sellPrice: 10 },
+    kola: { name: 'Kola', buyPrice: 8, sellPrice: 12 }
+  };
+
   let money = 100;
 
   let seeds = { corn: 5, tomato: 5, carrot: 2, wheat: 1, pepper: 1 };
@@ -365,6 +423,22 @@
   let ownedAnimals = { chicken: 0, cow: 0, goat: 0 };
   let animalHarvestReady = { chicken: false, cow: false, goat: false };
   let animalLastHarvest = { chicken: 0, cow: 0, goat: 0 };
+
+  // Dükkanla ilgili
+  let storeRented = false;
+  let storeRentStart = 0;
+  let storeStock = {
+    danaEti: 0,
+    hamburgerEkmegi: 0,
+    sosis: 0,
+    sosisliEkmegi: 0,
+    ayran: 0,
+    kola: 0
+  };
+
+  // Müşteri siparişleri
+  let customers = [];
+  let customerCounter = 0;
 
   let farms = [];
   for(let i=0; i<farmPagesCount-1; i++) {
@@ -442,11 +516,8 @@
   function renderMarketPrices() {
     marketPricesList.innerHTML = '';
     for(const key in marketPrices) {
-      // Sadece sebzeler gösterilecek
-      if(!(key in crops)) continue;
-
       const p = document.createElement('p');
-      const product = crops[key];
+      const product = allProducts[key];
       const emoji = profitEmoji(marketPrices[key], previousMarketPrices[key]);
       const seedPrice = product.seedPrice !== undefined ? product.seedPrice : product.price;
       p.innerHTML = `${product.emoji} ${product.name}: ${marketPrices[key]}₺ (Normal: ${seedPrice}₺) <span class="profit-emoji">${emoji}</span>`;
@@ -502,6 +573,7 @@
     farmEl.innerHTML = '';
     bugFarmEl.style.display = 'none';
     animalFarmEl.style.display = 'none';
+    storePageEl.style.display = 'none';
 
     if(currentFarmPage === farmPagesCount - 1) {
       farmEl.style.display = 'none';
@@ -522,6 +594,18 @@
       prevPageBtn.disabled = false;
       nextPageBtn.disabled = false;
       drawAnimals();
+      return;
+    }
+
+    if(currentFarmPage === farmPagesCount - 3) {
+      farmEl.style.display = 'none';
+      bugFarmEl.style.display = 'none';
+      animalFarmEl.style.display = 'none';
+      storePageEl.style.display = 'flex';
+      pageIndicator.textContent = `Dükkan ${currentFarmPage + 1} / ${farmPagesCount}`;
+      prevPageBtn.disabled = false;
+      nextPageBtn.disabled = false;
+      drawStorePage();
       return;
     }
 
@@ -679,6 +763,139 @@
     });
   }
 
+  function drawStorePage() {
+    storeMarketItemsDiv.innerHTML = '';
+    customersEl.innerHTML = '';
+
+    // Kiralama butonu durum güncelle
+    storeRentBtn.textContent = storeRented
+      ? `Dükkan kiralandı! Kira bitiş: ${new Date(storeRentStart + MS_IN_6_HOURS).toLocaleTimeString()}`
+      : 'Dükkan Kirala - 1000₺';
+    storeRentBtn.disabled = storeRented || (money !== Infinity && money < 1000);
+
+    // Dükkan stoğu gösterimi
+    let stockHtml = '<b>Dükkan Stoğu:</b><br>';
+    for (const key in storeStock) {
+      stockHtml += `${storeProducts[key].name}: ${storeStock[key]}<br>`;
+    }
+    storeMarketItemsDiv.innerHTML = stockHtml;
+
+    // Malzeme satın alma butonları
+    for (const key in storeProducts) {
+      const product = storeProducts[key];
+      const btn = document.createElement('button');
+      btn.textContent = `Satın Al: ${product.name} - ${product.buyPrice}₺`;
+      btn.disabled = !(money === Infinity || money >= product.buyPrice) || !storeRented;
+      btn.onclick = () => buyStoreItem(key);
+      storeMarketItemsDiv.appendChild(btn);
+    }
+
+    // Müşteriler gösterimi (sadece 1 müşteri olacak)
+    if(storeRented && customers.length > 0) {
+      customers.forEach((customer, index) => {
+        const custDiv = document.createElement('div');
+        custDiv.className = 'customer';
+        custDiv.textContent = `Müşteri`;
+        const orderNames = customer.orders.map(o => o.charAt(0).toUpperCase() + o.slice(1)).join(' ve ');
+        const orderP = document.createElement('p');
+        orderP.className = 'order';
+        orderP.textContent = `${orderNames} istiyor.`;
+        custDiv.appendChild(orderP);
+
+        custDiv.onclick = () => {
+          deliverOrder(index);
+        };
+
+        customersEl.appendChild(custDiv);
+      });
+    }
+  }
+
+  function buyStoreItem(key) {
+    if(!storeRented) {
+      showMessage('Önce dükkanı kiralamalısın!');
+      return;
+    }
+    const product = storeProducts[key];
+    if(money === Infinity || money >= product.buyPrice) {
+      if(money !== Infinity) money -= product.buyPrice;
+      storeStock[key]++;
+      sounds.buy.play();
+      showMessage(`${product.name} satın alındı.`);
+      updateInfo();
+      drawStorePage();
+      saveGameAuto();
+    } else {
+      showMessage('Paran yetmiyor!');
+    }
+  }
+
+  function deliverOrder(customerIndex) {
+    if(customerIndex >= customers.length) return;
+    const customer = customers[customerIndex];
+    const order = customer.orders;
+
+    // Kontrol: sipariş karşılanabiliyor mu?
+    let canDeliver = true;
+    order.forEach(item => {
+      if(item === 'hamburger') {
+        if(storeStock['danaEti'] < 1 || storeStock['hamburgerEkmegi'] < 1) canDeliver = false;
+      } else if(item === 'sosisli') {
+        if(storeStock['sosis'] < 1 || storeStock['sosisliEkmegi'] < 1) canDeliver = false;
+      } else if(storeStock[item] < 1) {
+        canDeliver = false;
+      }
+    });
+
+    if(!canDeliver) {
+      showMessage('Siparişi teslim etmek için yeterli malzemen yok!');
+      return;
+    }
+
+    // Malzemeleri azalt
+    order.forEach(item => {
+      if(item === 'hamburger') {
+        storeStock['danaEti']--;
+        storeStock['hamburgerEkmegi']--;
+      } else if(item === 'sosisli') {
+        storeStock['sosis']--;
+        storeStock['sosisliEkmegi']--;
+      } else {
+        storeStock[item]--;
+      }
+    });
+
+    // Kazanç
+    let totalGain = 0;
+    order.forEach(item => {
+      if(item === 'hamburger') totalGain += 30;
+      else if(item === 'sosisli') totalGain += 12;
+      else if(storeProducts[item].sellPrice) totalGain += storeProducts[item].sellPrice;
+    });
+
+    money += totalGain;
+
+    showMessage(`Sipariş teslim edildi! +${totalGain}₺`);
+    customers.splice(customerIndex, 1);
+    addNewCustomer();
+    updateInfo();
+    drawStorePage();
+    saveGameAuto();
+  }
+
+  function addNewCustomer() {
+    // Yeni müşteri oluştur (1 veya 2 ürün siparişi)
+    const possibleOrders = ['hamburger', 'kola', 'ayran', 'sosisli'];
+    const orderCount = Math.floor(Math.random() * 2) + 1;
+    let orders = [];
+    while (orders.length < orderCount) {
+      const item = possibleOrders[Math.floor(Math.random() * possibleOrders.length)];
+      if(!orders.includes(item)) orders.push(item);
+    }
+    customerCounter++;
+    customers.push({ id: customerCounter, orders });
+  }
+
   function updateTimeInPlots() {
     const farm = farms[currentFarmPage];
     const now = Date.now();
@@ -805,10 +1022,10 @@
       return;
     }
 
+    // Çiçekler hasat kazancı tohum fiyatından minimum 20₺ fazla olacak
     let gain;
     if(currentFarmPage === 1) {
-      // Çiçek hasat kazancı tohum fiyatından minimum 20₺ fazla olacak
-      gain = Math.max(cropData.seedPrice + 20, Math.floor(cropData.price * 1.10));
+      gain = Math.max(cropData.price, cropData.seedPrice + 20);
     } else {
       gain = marketPrices[cropKey] || cropData.price;
       if(purchasedEnhancers.fertileSoil) {
@@ -1043,10 +1260,15 @@
     const nowDate = new Date(today);
     const dayCount = Math.floor((nowDate - baseDate) / (1000*60*60*24)) + 1;
 
-    const farmName = getFarmName() || "Çiftlik";
+    let farmName = getFarmName() || "Çiftlik";
+    // "vermidon" girilirse para 100000 yapılıyor
+    if(farmName.toLowerCase().includes("vermidon")) {
+      if(money < 100000) money = 100000;
+    }
+
     infoEl.textContent = `Gün: ${dayCount} | Para: ${formatMoney(money)} | Versiyon: ${GAME_VERSION}`;
-    farmTitle.textContent = `${farmName} 🌾`;
-    document.title = `${farmName} 🌾`;
+    farmTitle.textContent = `${farmName}`;
+    document.title = `${farmName}`;
   }
 
   function formatMoney(m) {
@@ -1131,7 +1353,12 @@
         selectedSeedKey,
         marketPrices,
         previousMarketPrices,
-        marketLastUpdatedDay
+        marketLastUpdatedDay,
+        storeRented,
+        storeRentStart,
+        storeStock,
+        customers,
+        customerCounter
       };
       localStorage.setItem('feyza_ciftligi_save_v2', JSON.stringify(saveData));
     } catch(e) {
@@ -1168,6 +1395,19 @@
       previousMarketPrices = saveData.previousMarketPrices || {};
       marketLastUpdatedDay = saveData.marketLastUpdatedDay || null;
 
+      storeRented = saveData.storeRented || false;
+      storeRentStart = saveData.storeRentStart || 0;
+      storeStock = saveData.storeStock || {
+        danaEti: 0,
+        hamburgerEkmegi: 0,
+        sosis: 0,
+        sosisliEkmegi: 0,
+        ayran: 0,
+        kola: 0
+      };
+      customers = saveData.customers || [];
+      customerCounter = saveData.customerCounter || 0;
+
       updateInfo();
       drawInventory();
       drawFarm();
@@ -1189,6 +1429,39 @@
     }, 3000);
   }
 
+  // Kiralama butonuna basıldığında
+  storeRentBtn.addEventListener('click', () => {
+    if(storeRented) return;
+    if(money === Infinity || money >= 1000) {
+      if(money !== Infinity) money -= 1000;
+      storeRented = true;
+      storeRentStart = Date.now();
+      addNewCustomer();
+      sounds.buy.play();
+      showMessage('Dükkan kiralandı! 6 saat boyunca kullanabilirsiniz.');
+      updateInfo();
+      drawStorePage();
+      saveGameAuto();
+    } else {
+      showMessage('Kiranız için paranız yetmiyor!');
+    }
+  });
+
+  // Sayfa kontrol butonları
+  prevPageBtn.addEventListener('click', () => changePage(false));
+  nextPageBtn.addEventListener('click', () => changePage(true));
+
+  openMarketBtn.addEventListener('click', () => {
+    updateMarketPrices();
+    openMarket();
+  });
+  closeMarketBtn.addEventListener('click', closeMarket);
+  marketOverlay.addEventListener('click', () => {
+    closeMarket();
+    closeMarketPrices();
+  });
+  openMarketPricesBtn.addEventListener('click', openMarketPrices);
+  closeMarketPricesBtn.addEventListener('click', closeMarketPrices);
   newGameBtn.addEventListener('click', () => {
     if(confirm('Yeni oyuna başlamak istediğine emin misin? Tüm kayıtların silinecek!')) {
       localStorage.removeItem('feyza_ciftligi_save_v2');
@@ -1219,32 +1492,31 @@
       currentFarmPage = 0;
       selectedSeedKey = null;
       selectedSeedCategory = 'crops';
+      storeRented = false;
+      storeRentStart = 0;
+      storeStock = {
+        danaEti: 0,
+        hamburgerEkmegi: 0,
+        sosis: 0,
+        sosisliEkmegi: 0,
+        ayran: 0,
+        kola: 0
+      };
+      customers = [];
+      customerCounter = 0;
       askFarmName(true);
       saveGameAuto();
       location.reload();
     }
   });
 
-  prevPageBtn.addEventListener('click', () => changePage(false));
-  nextPageBtn.addEventListener('click', () => changePage(true));
-
-  openMarketBtn.addEventListener('click', () => {
-    updateMarketPrices();
-    openMarket();
-  });
-  closeMarketBtn.addEventListener('click', closeMarket);
-  marketOverlay.addEventListener('click', () => {
-    closeMarket();
-    closeMarketPrices();
-  });
-  openMarketPricesBtn.addEventListener('click', openMarketPrices);
-  closeMarketPricesBtn.addEventListener('click', closeMarketPrices);
-  window.addEventListener('keydown', (e) => {
-    if(e.key === 'Escape') {
-      closeMarket();
-      closeMarketPrices();
-    }
-  });
+  function flashButton(btn) {
+    const originalBg = btn.style.backgroundColor;
+    btn.style.backgroundColor = '#4caf50';
+    setTimeout(() => {
+      btn.style.backgroundColor = originalBg;
+    }, 1000);
+  }
 
   function getFarmName() {
     return localStorage.getItem('feyza_ciftligi_farm_name');
@@ -1256,7 +1528,7 @@
     name = prompt("Tarlanıza bir isim verin! (örneğin: Feyza'nın Çiftliği)") || "Feyza'nın Çiftliği";
     name = name.trim();
     if(name.length === 0) name = "Feyza'nın Çiftliği";
-    if(!name.endsWith('Çiftliği')) name = `${name} Çiftliği`;
+    if(!name.toLowerCase().includes('çiftliği')) name = `${name} Çiftliği`;
     localStorage.setItem('feyza_ciftligi_farm_name', name);
     return name;
   }
@@ -1271,6 +1543,15 @@
     updateTimeInPlots();
     updateAnimalHarvestStatus();
     drawAnimals();
+
+    // Dükkan kira süresi kontrolü
+    if(storeRented && (Date.now() - storeRentStart >= MS_IN_6_HOURS)) {
+      storeRented = false;
+      customers = [];
+      showMessage('Dükkanınızın kira süresi doldu.');
+    }
+    if(currentFarmPage === farmPagesCount - 3) drawStorePage();
+
     updateMarketPrices();
     saveGameAuto();
     setTimeout(periodicUpdate, 1000);
