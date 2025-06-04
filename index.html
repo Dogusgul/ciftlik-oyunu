@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -28,25 +29,35 @@
     text-align: center;
   }
   #info { font-size: 18px; margin-bottom: 8px; }
-  /* YENİLİK: XP Çubuğu için stiller */
   #xpBarContainer {
     width: 100%;
     background-color: #a5d6a7;
     border-radius: 10px;
     margin-bottom: 12px;
     box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
+    position: relative;
+    height: 18px;
   }
   #xpBar {
     width: 0%;
-    height: 18px;
+    height: 100%;
     background-color: #4caf50;
     border-radius: 10px;
+    transition: width 0.5s ease-in-out;
+  }
+  #xpBarText {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     text-align: center;
     line-height: 18px;
     color: white;
     font-size: 12px;
     font-weight: bold;
-    transition: width 0.5s ease-in-out;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    pointer-events: none;
   }
   #inventory {
     display: flex; justify-content: center;
@@ -102,14 +113,45 @@
     height: 24px; font-weight: bold; color: #2e7d32;
     margin-bottom: 12px; min-height: 24px;
   }
-  #marketModal, #marketOverlay, #marketPricesModal, #storeModal {
+  #questContainer {
+    background: #c8e6c9;
+    border: 2px solid #388e3c;
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 15px;
+    text-align: left;
+  }
+  #questContainer h3 {
+    margin: 0 0 10px 0;
+    text-align: center;
+    color: #1b5e20;
+  }
+  .quest-item {
+    background: #e8f5e9;
+    padding: 8px;
+    border-radius: 6px;
+    margin-bottom: 5px;
+    font-size: 14px;
+    color: #333;
+  }
+  .quest-progress {
+    font-weight: bold;
+    color: #2e7d32;
+  }
+  .quest-reward {
+    font-style: italic;
+    color: #555;
+    font-size: 13px;
+  }
+  
+  #marketModal, #marketOverlay, #marketPricesModal, #storeModal, #treasureHuntModal {
     user-select: none;
   }
   #marketOverlay {
     display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
     background: rgba(0,0,0,0.3); z-index: 900;
   }
-  #marketModal, #marketPricesModal, #storeModal {
+  #marketModal, #marketPricesModal, #storeModal, #treasureHuntModal {
     display: none; position: fixed; top: 50%; left: 50%;
     width: 380px; background: white; border-radius: 10px;
     box-shadow: 0 0 15px rgba(0,0,0,0.3);
@@ -117,8 +159,8 @@
     padding: 20px; z-index: 1000; max-height: 80vh;
     overflow-y: auto;
   }
-  #marketModal h2, #marketModal h3, #marketPricesModal h2, #storeModal h2 {
-    margin-top: 0; margin-bottom: 10px;
+  #marketModal h2, #marketModal h3, #marketPricesModal h2, #storeModal h2, #treasureHuntModal h2 {
+    margin-top: 0; margin-bottom: 10px; text-align: center;
   }
   #marketModal .seedBtn, #marketModal .bugBtn, #marketModal .enhancerBtn, #marketModal .animalBtn, #marketModal .consumableBtn, #storeModal button, #storeModal #rentStoreBtn {
     display: flex; align-items: center; justify-content: space-between;
@@ -139,12 +181,74 @@
     width: 40px; font-weight: bold; font-size: 18px; padding: 6px 0;
   }
   #bugFarm {
-    width: 400px; height: 400px; background-color: #2196f3;
+    width: 400px; height: 400px; background-color: #add8e6; 
+    border: 5px solid #2196f3; 
     border-radius: 12px; margin: 0 auto 20px;
     position: relative;
     cursor: default;
-    overflow: hidden;
+    overflow-y: auto; 
+    display: flex; 
+    flex-wrap: wrap; 
+    gap: 15px; 
+    padding: 15px; 
+    align-content: flex-start; 
+    justify-content: center;
   }
+  .bug-display {
+    width: 70px; 
+    height: 90px; 
+    background-color: #f0f8ff; 
+    border: 2px solid #87ceeb; 
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.2s, background-color 0.2s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  .bug-display:hover:not(.on-cooldown) {
+    transform: scale(1.1);
+    background-color: #e0ffff; 
+  }
+  .bug-display.on-cooldown {
+    background-color: #d3d3d3; 
+    cursor: not-allowed;
+    opacity: 0.7;
+  }
+  .bug-emoji { font-size: 36px; }
+  .bug-cooldown { font-size: 12px; font-weight: bold; color: #333; margin-top: 5px; }
+
+  #treasureHuntInfo { text-align: center; margin-bottom: 15px; font-weight: bold; }
+  #treasureGrid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); 
+    gap: 10px;
+    justify-content: center;
+  }
+  .treasure-cell {
+    width: 65px; 
+    height: 65px;
+    background-color: #cd853f; 
+    border: 3px solid #8b4513; 
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 30px;
+    transition: background-color 0.2s, transform 0.2s;
+  }
+  .treasure-cell:hover:not(.revealed) {
+    transform: scale(1.05);
+    background-color: #deb887; 
+  }
+  .treasure-cell.revealed {
+    background-color: #f4a460; 
+    cursor: default;
+  }
+
   #animalFarm {
     display: flex;
     flex-direction: column;
@@ -213,6 +317,7 @@
     font-weight: normal;
     font-size: 14px;
   }
+
   @media (max-width: 650px) {
     body {
       flex-direction: column;
@@ -243,9 +348,17 @@
       font-size: 28px;
     }
     #bugFarm {
-      width: 98vw;
-      height: 210px;
-      margin: 0 auto 10px;
+      width: calc(98vw - 30px); 
+      height: auto; 
+      min-height: 210px;
+    }
+    .bug-display {
+      width: 60px;
+      height: 80px;
+    }
+    .treasure-cell {
+      width: 55px;
+      height: 55px;
     }
     #animalFarm {
       width: 98vw;
@@ -260,13 +373,19 @@
       font-size: 14px;
       padding: 8px 6px;
     }
-    #marketModal, #marketPricesModal, #storeModal {
+    #marketModal, #marketPricesModal, #storeModal, #treasureHuntModal {
       width: 98vw !important;
       min-width: unset;
       max-width: 420px;
       left: 50%;
       transform: translate(-50%, -50%);
       padding: 10px;
+    }
+    #questContainer {
+      padding: 8px;
+    }
+    .quest-item {
+      font-size: 13px;
     }
   }
 </style>
@@ -275,13 +394,19 @@
 
 <div id="leftPanel">
   <h1 id="farmTitle">Çiftlik 🌾</h1>
-  <div id="info">Gün: 1 | Para: 100₺ | Seviye: 1 | Versiyon: 2.1.0</div>
+  <div id="info">Gün: 1 | Para: 100₺ | Seviye: 1 | Versiyon: 2.3.0</div>
   
   <div id="xpBarContainer">
     <div id="xpBar"></div>
+    <div id="xpBarText"></div>
   </div>
   
   <div id="message"></div>
+  
+  <div id="questContainer">
+    <h3>Görev Panosu</h3>
+    <div id="questList"></div>
+  </div>
 
   <div id="inventory"></div>
 
@@ -316,10 +441,8 @@
   <h2>Market</h2>
   <h3>Tohumlar</h3>
   <div id="marketSeeds"></div>
-  
   <h3>Tüketilebilirler</h3>
   <div id="marketConsumables"></div>
-
   <h3>Böcekler</h3>
   <div id="marketBugs"></div>
   <h3>Güçlendiriciler</h3>
@@ -347,16 +470,25 @@
   <button id="closeStoreBtn" style="margin-top:15px;">Kapat</button>
 </div>
 
+<div id="treasureHuntModal">
+  <h2>Hazine Avı!</h2>
+  <p id="treasureHuntInfo">Hazineyi bulmak için 3 hakkın var.</p>
+  <div id="treasureGrid"></div>
+  <button id="closeTreasureHuntBtn" style="margin-top: 15px;">Vazgeç</button>
+</div>
+
 <script>
   const sounds = {
     plant: new Audio('sounds/plant.wav'),
     harvest: new Audio('sounds/harvest.wav'),
     buy: new Audio('sounds/buy.wav'),
     pageChange: new Audio('sounds/pageChange.wav'),
-    levelUp: new Audio('sounds/levelUp.wav') // YENİLİK: Seviye atlama sesi
+    levelUp: new Audio('sounds/levelUp.wav'),
+    questComplete: new Audio('sounds/questComplete.wav'),
+    treasureFound: new Audio('sounds/treasure.wav')
   };
 
-  const GAME_VERSION = '2.1.0'; // YENİLİK: Sürüm güncellendi
+  const GAME_VERSION = '2.3.0';
 
   const infoEl = document.getElementById('info');
   const messageEl = document.getElementById('message');
@@ -374,10 +506,10 @@
   const marketOverlay = document.getElementById('marketOverlay');
   const closeMarketBtn = document.getElementById('closeMarketBtn');
   const marketSeedsDiv = document.getElementById('marketSeeds');
+  const marketConsumablesDiv = document.getElementById('marketConsumables');
   const marketBugsDiv = document.getElementById('marketBugs');
   const marketEnhancersDiv = document.getElementById('marketEnhancers');
   const marketAnimalsDiv = document.getElementById('marketAnimals');
-  const marketConsumablesDiv = document.getElementById('marketConsumables'); // YENİLİK
   const seedListEl = document.getElementById('seedList');
   const enhancerListEl = document.getElementById('enhancerList');
   const prevPageBtn = document.getElementById('prevPageBtn');
@@ -390,13 +522,21 @@
   const farmTitle = document.getElementById('farmTitle');
   const storeModal = document.getElementById('storeModal');
   const closeStoreBtn = document.getElementById('closeStoreBtn');
-  const xpBar = document.getElementById('xpBar'); // YENİLİK
+  const xpBar = document.getElementById('xpBar');
+  const questListEl = document.getElementById('questList');
+  const xpBarText = document.getElementById('xpBarText');
+  const treasureHuntModal = document.getElementById('treasureHuntModal');
+  const treasureGridEl = document.getElementById('treasureGrid');
+  const treasureHuntInfoEl = document.getElementById('treasureHuntInfo');
+  const closeTreasureHuntBtn = document.getElementById('closeTreasureHuntBtn');
   
   const farmPagesCount = 5;
   const farmSize = 5;
   const MS_IN_MINUTE = 60000;
   const MS_IN_HALF_HOUR = 1800000;
   const MS_IN_6_HOURS = 21600000;
+  const MAX_ACTIVE_QUESTS = 3;
+  const BUG_HUNT_COOLDOWN = 15 * 60 * 1000; 
 
   const crops = {
     corn:    { name: 'Mısır', growTimeMinutes: 20, price: 15, emoji: '🌽', seedPrice: 10, xp: 5 },
@@ -437,7 +577,6 @@
     goat:    { name: 'Keçi', emoji: '🐐', buyPrice: 1200, productPrice: 120, xp: 50 }
   };
 
-  // YENİLİK: Tüketilebilir eşyalar
   const consumables = {
     superFertilizer: { name: 'Süper Gübre', emoji: '🧪', price: 250, description: 'Ektiğiniz bir bitkinin anında büyümesini sağlar.' }
   };
@@ -450,10 +589,20 @@
     ayran: { name: 'Ayran', buyPrice: 5, sellPrice: 10 },
     kola: { name: 'Kola', buyPrice: 8, sellPrice: 12 }
   };
+  
+  const allQuests = [
+    { id: 1, text: '25 adet Mısır hasat et', type: 'harvest', target: 'corn', amount: 25, reward: { money: 200, xp: 50 } },
+    { id: 2, text: '15 adet Domates hasat et', type: 'harvest', target: 'tomato', amount: 15, reward: { money: 150, xp: 40 } },
+    { id: 3, text: '1 adet Tavuk satın al', type: 'buy_animal', target: 'chicken', amount: 1, reward: { money: 100, xp: 30 } },
+    { id: 4, text: '1 adet İnek satın al', type: 'buy_animal', target: 'cow', amount: 1, reward: { money: 250, xp: 60 } },
+    { id: 5, text: 'Toplam 1000₺ kazan', type: 'earn_money', target: 'money', amount: 1000, reward: { money: 100, xp: 100 } },
+    { id: 6, text: '10 adet Gül hasat et', type: 'harvest', target: 'rose', amount: 10, reward: { money: 80, xp: 25 } },
+    { id: 7, text: '5 adet Biber hasat et', type: 'harvest', target: 'pepper', amount: 5, reward: { money: 120, xp: 35 } },
+    { id: 8, text: '2 adet Keçi satın al', type: 'buy_animal', target: 'goat', amount: 2, reward: { money: 500, xp: 150 } },
+    { id: 9, text: 'Dükkandan 5 sipariş teslim et', type: 'deliver_order', target: 'any', amount: 5, reward: { money: 300, xp: 120 } }
+  ];
 
   let money = 100;
-  
-  // YENİLİK: Seviye sistemi için değişkenler
   let level = 1;
   let xp = 0;
   let xpToNextLevel = 100;
@@ -466,11 +615,13 @@
   let animalHarvestReady = { chicken: false, cow: false, goat: false };
   let animalLastHarvest = { chicken: 0, cow: 0, goat: 0 };
 
-  // YENİLİK: Tüketilebilir eşya envanteri
   let ownedConsumables = {
     superFertilizer: 0
   };
 
+  let playerQuests = [];
+  let bugLastPlayed = {};
+  
   let storeRented = false;
   let storeRentStart = 0;
   let storeStock = {
@@ -488,11 +639,11 @@
     }
     farms.push(pageFarm);
   }
-  farms.push([{ bugType: null, x: 0, y: 0 }]);
+  farms.push([{ bugType: null, x: 0, y: 0 }]); // Son sayfa (bug farm) için dummy
 
   let currentFarmPage = 0;
-  let selectedItem = null; // YENİLİK: selectedSeedKey -> selectedItem olarak genelleştirildi
-  let selectedItemType = 'seed'; // YENİLİK: 'seed', 'consumable' vs. olabilir
+  let selectedItem = null;
+  let selectedItemType = 'seed';
 
   const allProducts = {...crops, ...flowers};
 
@@ -500,23 +651,187 @@
   let previousMarketPrices = {};
   let marketLastUpdatedDay = null;
 
+  let treasureGame = {
+    active: false,
+    bugKey: null,
+    triesLeft: 3,
+    treasureLocation: -1
+  };
+
   function getCurrentGameDay() {
     const now = new Date();
     return `${now.getFullYear()}-${(now.getMonth()+1).toString().padStart(2,"0")}-${now.getDate().toString().padStart(2,"0")}`;
   }
   
-  // YENİLİK: XP ekleme ve seviye atlama fonksiyonu
   function addXp(amount) {
+    if (isNaN(amount)) return;
     xp += amount;
     if (xp >= xpToNextLevel) {
       level++;
       xp = xp - xpToNextLevel;
-      xpToNextLevel = Math.floor(xpToNextLevel * 1.5); // Sonraki seviye için gereken XP'yi arttır
+      xpToNextLevel = Math.floor(xpToNextLevel * 1.5);
       showMessage(`🎉 Seviye atladın! Yeni seviyen: ${level} 🎉`);
-      sounds.levelUp.play();
+      try { sounds.levelUp.play(); } catch(e) {}
     }
-    updateInfo(); // Bilgi ve XP barını güncelle
+    updateInfo();
   }
+  
+  function addMoney(amount) {
+    if (isNaN(amount)) return;
+    money += amount;
+    updateQuestProgress('earn_money', 'money', amount);
+  }
+  
+  function initQuests() {
+    while (playerQuests.length < MAX_ACTIVE_QUESTS) {
+      addRandomQuest();
+    }
+    drawQuests();
+  }
+
+  function addRandomQuest() {
+    const availableQuests = allQuests.filter(q => !playerQuests.some(pq => pq.id === q.id));
+    if (availableQuests.length === 0) return;
+
+    const randomQuest = availableQuests[Math.floor(Math.random() * availableQuests.length)];
+    playerQuests.push({ ...randomQuest, progress: 0 });
+  }
+  
+  function updateQuestProgress(type, target, amount) {
+    let questCompletedThisUpdate = false;
+    playerQuests.forEach(quest => {
+        if (!quest.isComplete && quest.type === type && (quest.target === 'any' || quest.target === target)) {
+             quest.progress += amount;
+        }
+
+        if (!quest.isComplete && quest.progress >= quest.amount) {
+            quest.isComplete = true; 
+            completeQuest(quest);
+            questCompletedThisUpdate = true;
+        }
+    });
+
+    if (questCompletedThisUpdate) {
+        playerQuests = playerQuests.filter(q => !q.isComplete);
+        while (playerQuests.length < MAX_ACTIVE_QUESTS) {
+            addRandomQuest();
+        }
+    }
+    drawQuests();
+  }
+
+  function completeQuest(quest) {
+    addMoney(quest.reward.money);
+    addXp(quest.reward.xp);
+    showMessage(`Görev Tamamlandı: ${quest.text} (+${quest.reward.money}₺, +${quest.reward.xp} XP)`);
+    try { sounds.questComplete.play(); } catch(e) {}
+  }
+
+  function drawQuests() {
+    questListEl.innerHTML = '';
+    if (playerQuests.length === 0) {
+        questListEl.innerHTML = '<p>Aktif görevin yok.</p>';
+        return;
+    }
+
+    playerQuests.forEach(quest => {
+        const questDiv = document.createElement('div');
+        questDiv.className = 'quest-item';
+        const currentProgress = Math.min(Math.floor(quest.progress), quest.amount);
+        const progressText = `<span class="quest-progress">(${currentProgress}/${quest.amount})</span>`;
+        const rewardText = `<div class="quest-reward">Ödül: ${quest.reward.money}₺, ${quest.reward.xp} XP</div>`;
+        
+        questDiv.innerHTML = `${quest.text} ${progressText}${rewardText}`;
+        questListEl.appendChild(questDiv);
+    });
+  }
+
+  function startTreasureHunt(bugKey) {
+    const now = Date.now();
+    const lastPlayed = bugLastPlayed[bugKey] || 0;
+
+    if (now - lastPlayed < BUG_HUNT_COOLDOWN) {
+      const remainingMs = BUG_HUNT_COOLDOWN - (now - lastPlayed);
+      const remainingMin = Math.ceil(remainingMs / 60000);
+      showMessage(`${bugs[bugKey].name} ile hazine avına çıkmak için ${remainingMin} dakika beklemelisin.`);
+      return;
+    }
+
+    treasureGame = {
+      active: true,
+      bugKey: bugKey,
+      triesLeft: 3,
+      treasureLocation: Math.floor(Math.random() * 16)
+    };
+
+    setupTreasureGrid();
+    treasureHuntModal.style.display = 'block';
+    marketOverlay.style.display = 'block';
+  }
+
+  function setupTreasureGrid() {
+    treasureGridEl.innerHTML = '';
+    treasureHuntInfoEl.textContent = `Hazineyi bulmak için ${treasureGame.triesLeft} hakkın var.`;
+
+    for (let i = 0; i < 16; i++) {
+      const cell = document.createElement('div');
+      cell.className = 'treasure-cell';
+      cell.dataset.index = i;
+      cell.onclick = () => handleTreasureCellClick(cell);
+      treasureGridEl.appendChild(cell);
+    }
+  }
+
+  function handleTreasureCellClick(cell) {
+    if (!treasureGame.active || cell.classList.contains('revealed')) return;
+
+    treasureGame.triesLeft--;
+    cell.classList.add('revealed');
+
+    const index = parseInt(cell.dataset.index);
+    if (index === treasureGame.treasureLocation) {
+      cell.textContent = '💰';
+      endTreasureHunt(true);
+    } else {
+      cell.textContent = '🧱';
+      treasureHuntInfoEl.textContent = `Hazineyi bulmak için ${treasureGame.triesLeft} hakkın var.`;
+      if (treasureGame.triesLeft <= 0) {
+        endTreasureHunt(false);
+      }
+    }
+  }
+
+  function endTreasureHunt(isWin) {
+    treasureGame.active = false;
+    bugLastPlayed[treasureGame.bugKey] = Date.now(); 
+
+    if (isWin) {
+      const reward = Math.floor(Math.random() * (250 - 150 + 1)) + 150;
+      addMoney(reward);
+      showMessage(`Tebrikler! ${reward}₺ buldun!`);
+      try { sounds.treasureFound.play(); } catch(e) {}
+    } else {
+      const allCells = treasureGridEl.querySelectorAll('.treasure-cell');
+      if (allCells[treasureGame.treasureLocation]) {
+         allCells[treasureGame.treasureLocation].textContent = '💰';
+         allCells[treasureGame.treasureLocation].style.backgroundColor = '#ffcccb';
+      }
+      showMessage('Maalesef, hazineyi bulamadın! Başka sefere.');
+    }
+
+    setTimeout(() => {
+      treasureHuntModal.style.display = 'none';
+      marketOverlay.style.display = 'none';
+      if (currentFarmPage === 4) drawBugs();
+      saveGameAuto();
+    }, isWin ? 2000: 3000); // Kaybedince biraz daha uzun göster
+  }
+
+  closeTreasureHuntBtn.addEventListener('click', () => {
+      treasureHuntModal.style.display = 'none';
+      marketOverlay.style.display = 'none';
+      treasureGame.active = false;
+  });
 
   function updateMarketPrices() {
     const currentDay = getCurrentGameDay();
@@ -525,16 +840,13 @@
     previousMarketPrices = {...marketPrices};
     Object.keys(crops).forEach(key => {
       let basePrice = crops[key].price;
-      let change = 0;
+      let change = (Math.random() * 0.6) - 0.10;
       if(Math.random() < 0.10) change = -0.10;
       else if(Math.random() < 0.05) change = 1.00;
-      else change = (Math.random() * 0.6) - 0.10;
-      let price = Math.max(1, Math.floor(basePrice * (1 + change)));
-      marketPrices[key] = price;
+      marketPrices[key] = Math.max(1, Math.floor(basePrice * (1 + change)));
     });
     Object.keys(flowers).forEach(key => {
-      const price = Math.floor(Math.random() * (8 - 4 + 1)) + 4;
-      marketPrices[key] = price;
+      marketPrices[key] = Math.floor(Math.random() * (8 - 4 + 1)) + 4;
     });
   }
 
@@ -570,8 +882,6 @@
 
   function drawInventory() {
     inventoryEl.innerHTML = '';
-    
-    // Tohumları çiz
     const sourceSeeds = currentFarmPage === 1 ? flowerSeeds : seeds;
     const sourceCrops = currentFarmPage === 1 ? flowers : crops;
 
@@ -582,7 +892,6 @@
             if(selectedItem === key && selectedItemType === 'seed') btn.classList.add('selected');
             const emojiSpan = document.createElement('span');
             emojiSpan.textContent = sourceCrops[key].emoji;
-            emojiSpan.style.fontSize = '32px';
             const countSpan = document.createElement('span');
             countSpan.className = 'inv-count';
             countSpan.textContent = sourceSeeds[key];
@@ -599,7 +908,6 @@
         }
     }
     
-    // YENİLİK: Tüketilebilirleri çiz
     for (const key in ownedConsumables) {
         if (ownedConsumables[key] > 0) {
             const itemData = consumables[key];
@@ -608,7 +916,6 @@
             if (selectedItem === key && selectedItemType === 'consumable') btn.classList.add('selected');
             const emojiSpan = document.createElement('span');
             emojiSpan.textContent = itemData.emoji;
-            emojiSpan.style.fontSize = '32px';
             const countSpan = document.createElement('span');
             countSpan.className = 'inv-count';
             countSpan.textContent = ownedConsumables[key];
@@ -625,7 +932,6 @@
         }
     }
   }
-  
 
   function drawEnhancerList() {
     enhancerListEl.innerHTML = '';
@@ -639,84 +945,62 @@
   }
 
   function drawFarm() {
-    farmEl.innerHTML = '';
+    farmEl.style.display = 'none';
     bugFarmEl.style.display = 'none';
     animalFarmEl.style.display = 'none';
     storePageEl.style.display = 'none';
+    
+    const pageConfig = [
+        { type: 'farm', displayEl: farmEl, drawFunc: drawFarmPlots, title: `Tarla ${currentFarmPage + 1}` },
+        { type: 'farm', displayEl: farmEl, drawFunc: drawFarmPlots, title: `Tarla ${currentFarmPage + 1}` },
+        { type: 'store', displayEl: storePageEl, drawFunc: drawStorePage, title: 'Dükkan' },
+        { type: 'animal', displayEl: animalFarmEl, drawFunc: drawAnimals, title: 'Hayvan Çiftliği' },
+        { type: 'bug', displayEl: bugFarmEl, drawFunc: drawBugs, title: 'Böcek Tarlası' }
+    ];
 
-    if(currentFarmPage === farmPagesCount - 1) {
-      farmEl.style.display = 'none';
-      bugFarmEl.style.display = 'block';
-      animalFarmEl.style.display = 'none';
-      pageIndicator.textContent = `Tarla ${currentFarmPage + 1} / ${farmPagesCount}`;
-      prevPageBtn.disabled = false;
-      nextPageBtn.disabled = true;
-      drawBugs();
-      return;
-    }
-
-    if(currentFarmPage === farmPagesCount - 2) {
-      farmEl.style.display = 'none';
-      bugFarmEl.style.display = 'none';
-      animalFarmEl.style.display = 'flex';
-      pageIndicator.textContent = `Tarla ${currentFarmPage + 1} / ${farmPagesCount}`;
-      prevPageBtn.disabled = false;
-      nextPageBtn.disabled = false;
-      drawAnimals();
-      return;
-    }
-
-    if(currentFarmPage === farmPagesCount - 3) {
-      farmEl.style.display = 'none';
-      bugFarmEl.style.display = 'none';
-      animalFarmEl.style.display = 'none';
-      storePageEl.style.display = 'flex';
-      pageIndicator.textContent = `Dükkan ${currentFarmPage + 1} / ${farmPagesCount}`;
-      prevPageBtn.disabled = false;
-      nextPageBtn.disabled = false;
-      drawStorePage();
-      return;
-    }
-
-    farmEl.style.display = 'grid';
+    const config = pageConfig[currentFarmPage];
+    config.displayEl.style.display = config.type === 'farm' ? 'grid' : 'flex';
+    if (config.type === 'bug') config.displayEl.style.display = 'flex'; // bugFarm için flex yaptık
+    config.drawFunc();
+    pageIndicator.textContent = `${config.title} / ${farmPagesCount}`;
+    
+    prevPageBtn.disabled = currentFarmPage === 0;
+    nextPageBtn.disabled = currentFarmPage === farmPagesCount - 1;
+  }
+  
+  function drawFarmPlots() {
+    farmEl.innerHTML = '';
     const farm = farms[currentFarmPage];
     farm.forEach((plot, i) => {
       const plotEl = document.createElement('div');
       plotEl.classList.add('plot');
       if(currentFarmPage === 1) plotEl.style.backgroundColor = '#7a4f8a';
+      
       if(plot.state === 'empty') {
         plotEl.style.backgroundColor = currentFarmPage === 1 ? '#7a4f8a' : '#7b4f24';
-        plotEl.textContent = '';
       } else {
         const isReady = isPlotReady(plot);
-        if(isReady) plotEl.classList.add('grown');
-        else plotEl.classList.add('planted');
-        const emoji = currentFarmPage === 1 ? flowers[plot.cropType]?.emoji || '' : crops[plot.cropType]?.emoji || '';
+        plotEl.classList.add(isReady ? 'grown' : 'planted');
+        const emoji = (currentFarmPage === 1 ? flowers : crops)[plot.cropType]?.emoji || '';
+        
         const emojiSpan = document.createElement('span');
         emojiSpan.textContent = emoji;
-        emojiSpan.style.display = 'block';
-        emojiSpan.style.fontSize = currentFarmPage === 1 ? '36px' : '40px';
-        emojiSpan.style.lineHeight = '1';
+        emojiSpan.style.fontSize = isReady ? '40px' : '30px';
+
         const timeSpan = document.createElement('span');
-        timeSpan.style.display = 'block';
         timeSpan.style.fontSize = '14px';
-        timeSpan.style.marginTop = '2px';
         timeSpan.style.fontWeight = 'bold';
-        timeSpan.style.color = '#c5e1a5';
         timeSpan.dataset.plotIndex = i;
+
         plotEl.appendChild(emojiSpan);
         plotEl.appendChild(timeSpan);
       }
-      plotEl.onclick = () => handlePlotClick(i, plot); // YENİLİK: Ayrı bir fonksiyona taşındı
+      plotEl.onclick = () => handlePlotClick(i, plot);
       farmEl.appendChild(plotEl);
     });
-    pageIndicator.textContent = `Tarla ${currentFarmPage + 1} / ${farmPagesCount}`;
-    prevPageBtn.disabled = currentFarmPage === 0;
-    nextPageBtn.disabled = currentFarmPage === farmPagesCount - 1;
     updateTimeInPlots();
   }
   
-  // YENİLİK: Tarla tıklama mantığını yöneten fonksiyon
   function handlePlotClick(index, plot) {
     if (selectedItemType === 'consumable' && selectedItem === 'superFertilizer') {
         if (plot.state === 'planted' && !isPlotReady(plot)) {
@@ -727,7 +1011,6 @@
         return;
     }
 
-    // Normal tohum ekme/hasat etme mantığı
     if(plot.state === 'empty') {
         if (selectedItemType === 'seed' && selectedItem) {
             plantCrop(index, selectedItem);
@@ -745,7 +1028,6 @@
     }
   }
 
-
   function drawAnimals() {
     animalFarmEl.innerHTML = '';
     Object.keys(animals).forEach(key => {
@@ -762,12 +1044,13 @@
       countSpan.textContent = `Adet: ${count}`;
       const harvestSpan = document.createElement('span');
       harvestSpan.className = 'harvest-status';
+
       if(count > 0) {
         if(animalHarvestReady[key]) {
           harvestSpan.textContent = 'Hasat hazır!';
         } else {
           const now = Date.now();
-          const elapsed = now - animalLastHarvest[key];
+          const elapsed = now - (animalLastHarvest[key] || 0);
           const remaining = MS_IN_HALF_HOUR - elapsed;
           if(remaining > 0) {
             const min = Math.floor(remaining / 60000);
@@ -777,12 +1060,11 @@
             harvestSpan.textContent = 'Hasat hazır!';
           }
         }
-      } else {
-        harvestSpan.textContent = '';
       }
       div.appendChild(emojiSpan);
       div.appendChild(countSpan);
       div.appendChild(harvestSpan);
+
       div.onclick = () => {
         if(count === 0) {
           showMessage(`${animal.name} satın alınmamış!`);
@@ -790,15 +1072,15 @@
         }
         if(animalHarvestReady[key]) {
           const totalIncome = count * animal.productPrice;
-          money += totalIncome;
+          addMoney(totalIncome);
           animalHarvestReady[key] = false;
           animalLastHarvest[key] = Date.now();
-          addXp(animal.xp * count); // YENİLİK: Hayvan hasadından XP kazan
+          addXp(animal.xp * count);
           showMessage(`${animal.name} hasat edildi! +${totalIncome}₺ ve ${animal.xp * count} XP!`);
           updateInfo();
           drawAnimals();
           saveGameAuto();
-          sounds.harvest.play();
+          try { sounds.harvest.play(); } catch(e) {}
         } else {
           showMessage(`${animal.name} için hasat hazır değil.`);
         }
@@ -813,7 +1095,7 @@
     storeRentBtn.textContent = storeRented
       ? `Dükkan kiralandı! Kira bitiş: ${new Date(storeRentStart + MS_IN_6_HOURS).toLocaleTimeString()}`
       : 'Dükkan Kirala - 1000₺';
-    storeRentBtn.disabled = storeRented || (money !== Infinity && money < 1000);
+    storeRentBtn.disabled = storeRented || (money < 1000);
     let stockHtml = '<b>Dükkan Stoğu:</b><br>';
     for (const key in storeStock) stockHtml += `${storeProducts[key].name}: ${storeStock[key]}<br>`;
     storeMarketItemsDiv.innerHTML = stockHtml;
@@ -821,7 +1103,7 @@
       const product = storeProducts[key];
       const btn = document.createElement('button');
       btn.textContent = `Satın Al: ${product.name} - ${product.buyPrice}₺`;
-      btn.disabled = !(money === Infinity || money >= product.buyPrice) || !storeRented;
+      btn.disabled = (money < product.buyPrice) || !storeRented;
       btn.onclick = () => buyStoreItem(key);
       storeMarketItemsDiv.appendChild(btn);
     }
@@ -829,12 +1111,8 @@
       customers.forEach((customer, index) => {
         const custDiv = document.createElement('div');
         custDiv.className = 'customer';
-        custDiv.textContent = `Müşteri`;
         const orderNames = customer.orders.map(o => o.charAt(0).toUpperCase() + o.slice(1)).join(' ve ');
-        const orderP = document.createElement('p');
-        orderP.className = 'order';
-        orderP.textContent = `${orderNames} istiyor.`;
-        custDiv.appendChild(orderP);
+        custDiv.innerHTML = `Müşteri ${orderNames} istiyor.`;
         custDiv.onclick = () => deliverOrder(index);
         customersEl.appendChild(custDiv);
       });
@@ -847,10 +1125,10 @@
       return;
     }
     const product = storeProducts[key];
-    if(money === Infinity || money >= product.buyPrice) {
-      if(money !== Infinity) money -= product.buyPrice;
+    if(money >= product.buyPrice) {
+      money -= product.buyPrice;
       storeStock[key]++;
-      sounds.buy.play();
+      try { sounds.buy.play(); } catch(e) {}
       showMessage(`${product.name} satın alındı.`);
       updateInfo();
       drawStorePage();
@@ -861,42 +1139,42 @@
   }
 
   function deliverOrder(customerIndex) {
-    if(customerIndex >= customers.length) return;
     const customer = customers[customerIndex];
-    const order = customer.orders;
-    let canDeliver = true;
-    order.forEach(item => {
-      if(item === 'hamburger') {
-        if(storeStock['danaEti'] < 1 || storeStock['hamburgerEkmegi'] < 1) canDeliver = false;
-      } else if(item === 'sosisli') {
-        if(storeStock['sosis'] < 1 || storeStock['sosisliEkmegi'] < 1) canDeliver = false;
-      } else if(storeStock[item] < 1) canDeliver = false;
+    if(!customer) return;
+    
+    let canDeliver = customer.orders.every(item => {
+      if(item === 'hamburger') return storeStock.danaEti >= 1 && storeStock.hamburgerEkmegi >= 1;
+      if(item === 'sosisli') return storeStock.sosis >= 1 && storeStock.sosisliEkmegi >= 1;
+      return storeStock[item] >= 1;
     });
+
     if(!canDeliver) {
       showMessage('Siparişi teslim etmek için yeterli malzemen yok!');
       return;
     }
-    order.forEach(item => {
+
+    let totalGain = 0, totalXp = 0;
+    customer.orders.forEach(item => {
       if(item === 'hamburger') {
-        storeStock['danaEti']--; storeStock['hamburgerEkmegi']--;
+        storeStock.danaEti--; storeStock.hamburgerEkmegi--;
+        totalGain += 30; totalXp += 20;
       } else if(item === 'sosisli') {
-        storeStock['sosis']--; storeStock['sosisliEkmegi']--;
+        storeStock.sosis--; storeStock.sosisliEkmegi--;
+        totalGain += 12; totalXp += 10;
       } else {
         storeStock[item]--;
+        totalGain += storeProducts[item].sellPrice; totalXp += 5;
       }
     });
-    let totalGain = 0;
-    let totalXp = 0; // YENİLİK: Siparişten kazanılacak XP
-    order.forEach(item => {
-      if(item === 'hamburger') { totalGain += 30; totalXp += 20; }
-      else if(item === 'sosisli') { totalGain += 12; totalXp += 10; }
-      else if(storeProducts[item].sellPrice) { totalGain += storeProducts[item].sellPrice; totalXp += 5;}
-    });
-    money += totalGain;
-    addXp(totalXp); // YENİLİK: XP ekle
+
+    addMoney(totalGain);
+    addXp(totalXp);
+    updateQuestProgress('deliver_order', 'any', 1);
+
     showMessage(`Sipariş teslim edildi! +${totalGain}₺ ve ${totalXp} XP!`);
     customers.splice(customerIndex, 1);
-    addNewCustomer();
+    if(storeRented) addNewCustomer();
+    
     updateInfo();
     drawStorePage();
     saveGameAuto();
@@ -910,34 +1188,28 @@
       const item = possibleOrders[Math.floor(Math.random() * possibleOrders.length)];
       if(!orders.includes(item)) orders.push(item);
     }
-    customerCounter++;
-    customers.push({ id: customerCounter, orders });
+    customers.push({ id: ++customerCounter, orders });
   }
 
   function updateTimeInPlots() {
-    const farm = farms[currentFarmPage];
-    const now = Date.now();
     const plotTimeSpans = farmEl.querySelectorAll('span[data-plot-index]');
+    const now = Date.now();
     plotTimeSpans.forEach(span => {
       const i = parseInt(span.dataset.plotIndex);
-      const plot = farm[i];
-      if(!plot || plot.state !== 'planted' || !plot.plantedAt) {
-        span.textContent = '';
-        return;
+      const plot = farms[currentFarmPage]?.[i];
+      if(!plot || plot.state !== 'planted') {
+        span.textContent = ''; return;
       }
       const growTimeMs = getEffectiveGrowTime(plot) * MS_IN_MINUTE;
-      const elapsedMs = now - plot.plantedAt;
-      const remainingMs = growTimeMs - elapsedMs;
+      const remainingMs = (plot.plantedAt + growTimeMs) - now;
+      
       if(isPlotSpoiled(plot)) {
-        span.textContent = 'BOZULDU!';
-        span.style.color = '#b71c1c';
-      } else if(isPlotReady(plot)) {
-        span.textContent = 'Hasat hazır!';
-        span.style.color = '#aed581';
+        span.textContent = 'BOZULDU!'; span.style.color = '#b71c1c';
+      } else if(remainingMs <= 0) {
+        span.textContent = 'Hasat hazır!'; span.style.color = '#aed581';
       } else {
-        const remSec = Math.max(0, Math.floor(remainingMs / 1000));
-        const remMin = Math.floor(remSec / 60);
-        const remS = remSec % 60;
+        const remMin = Math.floor(remainingMs / 60000);
+        const remS = Math.floor((remainingMs % 60000) / 1000);
         span.textContent = `${remMin}:${remS.toString().padStart(2,'0')}`;
         span.style.color = '#c5e1a5';
       }
@@ -946,140 +1218,99 @@
 
   function updateAnimalHarvestStatus() {
     const now = Date.now();
-    Object.keys(ownedAnimals).forEach(key => {
+    Object.keys(animals).forEach(key => {
       if(ownedAnimals[key] > 0) {
-        if(animalLastHarvest[key] === 0) animalHarvestReady[key] = false;
-        else animalHarvestReady[key] = (now - animalLastHarvest[key]) >= MS_IN_HALF_HOUR;
-      } else {
-        animalHarvestReady[key] = false; animalLastHarvest[key] = 0;
+        animalHarvestReady[key] = (now - (animalLastHarvest[key] || 0)) >= MS_IN_HALF_HOUR;
       }
     });
   }
 
   function isPlotReady(plot) {
     if(plot.state !== 'planted' || !plot.plantedAt) return false;
-    const now = Date.now();
-    const elapsedMinutes = (now - plot.plantedAt) / MS_IN_MINUTE;
-    return elapsedMinutes >= getEffectiveGrowTime(plot);
+    return (Date.now() - plot.plantedAt) >= getEffectiveGrowTime(plot) * MS_IN_MINUTE;
   }
 
   function getEffectiveGrowTime(plot) {
     let t = plot.growTimeMinutes;
-    if(purchasedEnhancers.fastHarvest) t = Math.floor(t * 0.8);
+    if(purchasedEnhancers.fastHarvest) t *= 0.8;
     return t;
   }
 
   function isPlotSpoiled(plot) {
     if(plot.state !== 'planted' || !plot.plantedAt) return false;
-    const now = Date.now();
-    const elapsedMinutes = (now - plot.plantedAt) / MS_IN_MINUTE;
-    const readyTime = getEffectiveGrowTime(plot);
     const maxHours = purchasedEnhancers.freshKeeper ? 48 : 24;
-    const spoilMinutes = maxHours * 60;
-    return elapsedMinutes >= (readyTime + spoilMinutes);
+    return (Date.now() - plot.plantedAt) >= (getEffectiveGrowTime(plot) + maxHours * 60) * MS_IN_MINUTE;
   }
 
   function plantCrop(index, cropKey) {
-    let sourceSeeds, cropData, isValidPlanting = false;
-
-    if (currentFarmPage === 1 && flowers[cropKey]) {
-        sourceSeeds = flowerSeeds;
-        cropData = flowers[cropKey];
-        isValidPlanting = true;
-    } else if (currentFarmPage !== 1 && crops[cropKey]) {
-        sourceSeeds = seeds;
-        cropData = crops[cropKey];
-        isValidPlanting = true;
-    }
-
-    if (!isValidPlanting) {
+    const isFlowerPage = currentFarmPage === 1;
+    const cropData = isFlowerPage ? flowers[cropKey] : crops[cropKey];
+    const sourceSeeds = isFlowerPage ? flowerSeeds : seeds;
+    
+    if(!cropData || (isFlowerPage && !flowers[cropKey]) || (!isFlowerPage && !crops[cropKey])) {
         showMessage('Bu tohumu bu tarlaya ekemezsin!');
         return;
     }
-
     if(sourceSeeds[cropKey] <= 0) {
-      showMessage('Bu tohumdan stokta kalmadı!');
-      return;
+        showMessage('Bu tohumdan stokta kalmadı!');
+        return;
     }
     
-    let farm = farms[currentFarmPage];
-    farm[index] = {
+    farms[currentFarmPage][index] = {
       state: 'planted', cropType: cropKey, plantedAt: Date.now(), growTimeMinutes: cropData.growTimeMinutes
     };
     sourceSeeds[cropKey]--;
-    sounds.plant.play();
+    try { sounds.plant.play(); } catch(e) {}
     showMessage(`${cropData.name} ektin!`);
-    updateInfo();
-    drawInventory();
-    drawFarm();
-    saveGameAuto();
+    updateInfo(); drawInventory(); drawFarm(); saveGameAuto();
   }
 
-  // YENİLİK: Süper Gübre kullanma fonksiyonu
   function useSuperFertilizer(index) {
-    if (ownedConsumables.superFertilizer <= 0) {
-        showMessage('Hiç Süper Gübren yok!');
-        return;
-    }
-    let farm = farms[currentFarmPage];
-    const plot = farm[index];
-    const growTimeMs = getEffectiveGrowTime(plot) * MS_IN_MINUTE;
+    if (ownedConsumables.superFertilizer <= 0) return;
     
-    plot.plantedAt = Date.now() - growTimeMs; // Büyüme süresini tamamlamış gibi yap
-    
+    let plot = farms[currentFarmPage][index];
+    plot.plantedAt -= getEffectiveGrowTime(plot) * MS_IN_MINUTE;
     ownedConsumables.superFertilizer--;
     
     showMessage(`${allProducts[plot.cropType].name} anında büyüdü!`);
-    sounds.plant.play();
-    updateInfo();
-    drawInventory();
-    drawFarm();
-    saveGameAuto();
+    try { sounds.plant.play(); } catch(e) {}
+    updateInfo(); drawInventory(); drawFarm(); saveGameAuto();
   }
 
   function harvestCrop(index) {
-    let farm = farms[currentFarmPage];
-    const plot = farm[index];
+    let plot = farms[currentFarmPage][index];
     const cropKey = plot.cropType;
     let cropData = currentFarmPage === 1 ? flowers[cropKey] : crops[cropKey];
 
     if(isPlotSpoiled(plot)) {
-      farm[index] = { state: 'empty', cropType: null, plantedAt: null, growTimeMinutes: 0 };
+      farms[currentFarmPage][index] = { state: 'empty' };
       showMessage(`${cropData.name} bozulmuş, hasat edilemedi! 😢`);
-      drawFarm();
-      saveGameAuto();
+      drawFarm(); saveGameAuto();
       return;
     }
 
-    let gain;
-    if(currentFarmPage === 1) gain = Math.max(cropData.price, cropData.seedPrice + 20);
-    else {
-      gain = marketPrices[cropKey] || cropData.price;
-      if(purchasedEnhancers.fertileSoil) gain = Math.floor(gain * 1.2);
-    }
-
-    let extra = 0;
-    if(purchasedEnhancers.richSeed && Math.random() < 0.3) extra = 1;
-    let totalGain = gain * (1 + extra);
+    let gain = (currentFarmPage === 1) ? Math.max(cropData.price, cropData.seedPrice + 20)
+                                      : (marketPrices[cropKey] || cropData.price);
+    if(purchasedEnhancers.fertileSoil && currentFarmPage !== 1) gain *= 1.2;
     
-    money = money === Infinity ? money : money + totalGain;
-    addXp(cropData.xp * (1 + extra)); // YENİLİK: Hasattan XP kazan
-    farm[index] = { state: 'empty', cropType: null, plantedAt: null, growTimeMinutes: 0 };
-    sounds.harvest.play();
-    if(extra)
-      showMessage(`${cropData.name} hasat edildi! +${totalGain}₺ ve ${cropData.xp * (1 + extra)} XP! (BONUS!)`);
-    else
-      showMessage(`${cropData.name} hasat edildi! +${gain}₺ ve ${cropData.xp} XP!`);
-    updateInfo();
-    drawFarm();
-    saveGameAuto();
+    let extra = (purchasedEnhancers.richSeed && Math.random() < 0.3) ? 1 : 0;
+    let totalGain = Math.floor(gain * (1 + extra));
+    
+    addMoney(totalGain);
+    addXp(cropData.xp * (1 + extra));
+    updateQuestProgress('harvest', cropKey, (1 + extra));
+
+    farms[currentFarmPage][index] = { state: 'empty' };
+    try { sounds.harvest.play(); } catch(e) {}
+    showMessage(`${cropData.name} hasat edildi! +${totalGain}₺`);
+    updateInfo(); drawFarm(); saveGameAuto();
   }
 
   function openMarket() {
     marketModal.style.display = 'block';
     marketOverlay.style.display = 'block';
     renderMarketSeeds();
-    renderMarketConsumables(); // YENİLİK
+    renderMarketConsumables();
     renderMarketBugs();
     renderMarketEnhancers();
     renderMarketAnimals();
@@ -1094,87 +1325,63 @@
 
   function renderMarketSeeds() {
     marketSeedsDiv.innerHTML = '';
-    for(const key in crops) {
-      const btn = document.createElement('button');
-      btn.classList.add('seedBtn');
-      btn.textContent = `${crops[key].emoji} ${crops[key].name} Tohumu - ${crops[key].seedPrice}₺`;
-      btn.disabled = money !== Infinity && money < crops[key].seedPrice;
-      btn.onclick = () => buySeed(key);
-      marketSeedsDiv.appendChild(btn);
-    }
-    for(const key in flowers) {
-      const btn = document.createElement('button');
-      btn.classList.add('seedBtn');
-      btn.textContent = `${flowers[key].emoji} ${flowers[key].name} Tohumu - ${flowers[key].seedPrice}₺`;
-      btn.disabled = money !== Infinity && money < flowers[key].seedPrice;
-      btn.onclick = () => buySeedFlower(key);
-      marketSeedsDiv.appendChild(btn);
-    }
+    const allSeedTypes = {...crops, ...flowers};
+    Object.keys(allSeedTypes).forEach(key => {
+        const crop = allSeedTypes[key];
+        const btn = document.createElement('button');
+        btn.className = 'seedBtn';
+        btn.textContent = `${crop.emoji} ${crop.name} Tohumu - ${crop.seedPrice}₺`;
+        btn.disabled = money < crop.seedPrice;
+        btn.onclick = () => (crops[key] ? buySeed(key) : buySeedFlower(key));
+        marketSeedsDiv.appendChild(btn);
+    });
   }
 
-  // YENİLİK: Tüketilebilir marketini render etme
   function renderMarketConsumables() {
     marketConsumablesDiv.innerHTML = '';
-    for(const key in consumables) {
+    Object.keys(consumables).forEach(key => {
       const item = consumables[key];
       const btn = document.createElement('button');
-      btn.classList.add('consumableBtn');
+      btn.className = 'consumableBtn';
       btn.textContent = `${item.emoji} ${item.name} - ${item.price}₺`;
-      btn.disabled = money !== Infinity && money < item.price;
+      btn.disabled = money < item.price;
       btn.title = item.description;
       btn.onclick = () => buyConsumable(key);
       marketConsumablesDiv.appendChild(btn);
-    }
+    });
   }
   
-  // YENİLİK: Tüketilebilir satın alma
   function buyConsumable(key) {
     const item = consumables[key];
-    if (money === Infinity || money >= item.price) {
-        if (money !== Infinity) money -= item.price;
+    if (money >= item.price) {
+        money -= item.price;
         ownedConsumables[key]++;
-        sounds.buy.play();
+        try { sounds.buy.play(); } catch(e) {}
         showMessage(`${item.name} satın aldın.`);
-        updateInfo();
-        drawInventory();
-        renderMarketConsumables(); // Buton durumunu güncelle
-        saveGameAuto();
+        updateInfo(); drawInventory(); renderMarketConsumables(); saveGameAuto();
     } else {
         showMessage('Paran yetmiyor!');
     }
   }
 
   function buySeed(seedKey) {
-    if(money === Infinity || money >= crops[seedKey].seedPrice) {
-      if(money !== Infinity) money -= crops[seedKey].seedPrice;
+    const crop = crops[seedKey];
+    if(money >= crop.seedPrice) {
+      money -= crop.seedPrice;
       seeds[seedKey]++;
-      sounds.buy.play();
-      showMessage(`${crops[seedKey].name} tohumu satın aldın.`);
-      updateInfo();
-      drawInventory();
-      renderMarketSeeds();
-      saveGameAuto();
-      const btns = marketSeedsDiv.querySelectorAll('button');
-      btns.forEach(btn => { if(btn.textContent.includes(crops[seedKey].name)) flashButton(btn); });
-    } else {
-      showMessage('Paran yetmiyor!');
-    }
+      try { sounds.buy.play(); } catch(e) {}
+      updateInfo(); drawInventory(); renderMarketSeeds(); saveGameAuto();
+    } else { showMessage('Paran yetmiyor!'); }
   }
+  
   function buySeedFlower(seedKey) {
-    if(money === Infinity || money >= flowers[seedKey].seedPrice) {
-      if(money !== Infinity) money -= flowers[seedKey].seedPrice;
+    const flower = flowers[seedKey];
+    if(money >= flower.seedPrice) {
+      money -= flower.seedPrice;
       flowerSeeds[seedKey]++;
-      sounds.buy.play();
-      showMessage(`${flowers[seedKey].name} tohumu satın aldın.`);
-      updateInfo();
-      drawInventory();
-      renderMarketSeeds();
-      saveGameAuto();
-      const btns = marketSeedsDiv.querySelectorAll('button');
-      btns.forEach(btn => { if(btn.textContent.includes(flowers[seedKey].name)) flashButton(btn); });
-    } else {
-      showMessage('Paran yetmiyor!');
-    }
+      try { sounds.buy.play(); } catch(e) {}
+      updateInfo(); drawInventory(); renderMarketSeeds(); saveGameAuto();
+    } else { showMessage('Paran yetmiyor!'); }
   }
 
   function renderMarketBugs() {
@@ -1183,7 +1390,7 @@
       const btn = document.createElement('button');
       btn.classList.add('bugBtn');
       btn.textContent = `${bugs[key].emoji} ${bugs[key].name} - ${bugs[key].price}₺`;
-      btn.disabled = purchasedBugs[key] || (money !== Infinity && money < bugs[key].price);
+      btn.disabled = purchasedBugs[key] || (money < bugs[key].price);
       btn.onclick = () => buyBug(key);
       marketBugsDiv.appendChild(btn);
     }
@@ -1191,14 +1398,13 @@
 
   function buyBug(bugKey) {
     if(purchasedBugs[bugKey]) { showMessage('Bu böceği zaten satın aldın!'); return; }
-    if(money === Infinity || money >= bugs[bugKey].price) {
-      if(money !== Infinity) money -= bugs[bugKey].price;
+    if(money >= bugs[bugKey].price) {
+      money -= bugs[bugKey].price;
       purchasedBugs[bugKey] = true;
-      sounds.buy.play();
+      bugLastPlayed[bugKey] = 0; // Yeni alınan böceğin bekleme süresi olmasın
+      try { sounds.buy.play(); } catch(e) {}
       showMessage(`${bugs[bugKey].name} satın alındı!`);
       updateInfo(); renderMarketBugs(); drawBugs(); saveGameAuto();
-      const btns = marketBugsDiv.querySelectorAll('button');
-      btns.forEach(btn => { if(btn.textContent.includes(bugs[bugKey].name)) flashButton(btn); });
     } else { showMessage('Paran yetmiyor!'); }
   }
 
@@ -1208,7 +1414,7 @@
       const btn = document.createElement('button');
       btn.classList.add('enhancerBtn');
       btn.textContent = `${enhancers[key].name} - ${enhancers[key].price}₺`;
-      btn.disabled = purchasedEnhancers[key] || (money !== Infinity && money < enhancers[key].price);
+      btn.disabled = purchasedEnhancers[key] || (money < enhancers[key].price);
       btn.title = enhancers[key].description;
       btn.onclick = () => buyEnhancer(key);
       marketEnhancersDiv.appendChild(btn);
@@ -1217,121 +1423,114 @@
 
   function buyEnhancer(key) {
     if(purchasedEnhancers[key]) { showMessage('Bu güçlendiriciyi zaten satın aldın!'); return; }
-    if(money === Infinity || money >= enhancers[key].price) {
-      if(money !== Infinity) money -= enhancers[key].price;
+    if(money >= enhancers[key].price) {
+      money -= enhancers[key].price;
       purchasedEnhancers[key] = true;
-      sounds.buy.play();
+      try { sounds.buy.play(); } catch(e) {}
       showMessage(`${enhancers[key].name} satın alındı!`);
       updateInfo(); renderMarketEnhancers(); drawEnhancerList(); saveGameAuto();
-      const btns = marketEnhancersDiv.querySelectorAll('button');
-      btns.forEach(btn => { if(btn.textContent.includes(enhancers[key].name)) flashButton(btn); });
     } else { showMessage('Paran yetmiyor!'); }
   }
-
+  
   function renderMarketAnimals() {
     marketAnimalsDiv.innerHTML = '';
-    for(const key in animals) {
+    Object.keys(animals).forEach(key => {
+      const animal = animals[key];
       const btn = document.createElement('button');
-      btn.classList.add('animalBtn');
-      btn.textContent = `${animals[key].emoji} ${animals[key].name} - ${animals[key].buyPrice}₺`;
-      btn.disabled = money !== Infinity && money < animals[key].buyPrice;
+      btn.className = 'animalBtn';
+      btn.textContent = `${animal.emoji} ${animal.name} - ${animal.buyPrice}₺`;
+      btn.disabled = money < animal.buyPrice;
       btn.onclick = () => buyAnimal(key);
       marketAnimalsDiv.appendChild(btn);
-    }
+    });
   }
 
   function buyAnimal(animalKey) {
-    if(money === Infinity || money >= animals[animalKey].buyPrice) {
-      if(money !== Infinity) money -= animals[animalKey].buyPrice;
+    const animal = animals[animalKey];
+    if(money >= animal.buyPrice) {
+      money -= animal.buyPrice;
       ownedAnimals[animalKey]++;
-      if(animalLastHarvest[animalKey] === 0) animalLastHarvest[animalKey] = Date.now();
-      sounds.buy.play();
-      showMessage(`${animals[animalKey].name} satın aldın.`);
+      if(animalLastHarvest[animalKey] === 0 || animalLastHarvest[animalKey] === undefined) animalLastHarvest[animalKey] = Date.now();
+      try { sounds.buy.play(); } catch(e) {}
+      showMessage(`${animal.name} satın aldın.`);
+      updateQuestProgress('buy_animal', animalKey, 1);
       updateInfo(); drawAnimals(); renderMarketAnimals(); saveGameAuto();
-      const btns = marketAnimalsDiv.querySelectorAll('button');
-      btns.forEach(btn => { if(btn.textContent.includes(animals[animalKey].name)) flashButton(btn); });
     } else { showMessage('Paran yetmiyor!'); }
-  }
-
-  function flashButton(btn) {
-    const originalBg = btn.style.backgroundColor;
-    btn.style.backgroundColor = '#4caf50';
-    setTimeout(() => { btn.style.backgroundColor = originalBg; }, 1000);
   }
 
   function updateSeedInventory() {
     seedListEl.innerHTML = '';
-    for(const key in seeds) {
-      const li = document.createElement('li');
-      li.textContent = `${crops[key].name}: ${seeds[key]}`;
-      seedListEl.appendChild(li);
-    }
-    for(const key in flowerSeeds) {
-      const li = document.createElement('li');
-      li.textContent = `${flowers[key].name}: ${flowerSeeds[key]}`;
-      seedListEl.appendChild(li);
-    }
+    Object.entries(seeds).forEach(([key, value]) => {
+      if(value > 0) seedListEl.innerHTML += `<li>${crops[key].name}: ${value}</li>`;
+    });
+    Object.entries(flowerSeeds).forEach(([key, value]) => {
+      if(value > 0) seedListEl.innerHTML += `<li>${flowers[key].name}: ${value}</li>`;
+    });
   }
 
   function updateInfo() {
     let baseDay = localStorage.getItem("feyza_ciftligi_first_play_date");
-    const today = getCurrentGameDay();
-    if(!baseDay) { baseDay = today; localStorage.setItem("feyza_ciftligi_first_play_date", baseDay); }
-    const dayCount = Math.floor((new Date(today) - new Date(baseDay)) / (1000*60*60*24)) + 1;
+    if(!baseDay) {
+      baseDay = getCurrentGameDay();
+      localStorage.setItem("feyza_ciftligi_first_play_date", baseDay);
+    }
+    const dayCount = Math.floor((new Date(getCurrentGameDay()) - new Date(baseDay)) / (1000*60*60*24)) + 1;
     let farmName = getFarmName() || "Çiftlik";
-    if(farmName.toLowerCase().includes("vermidon")) { if(money < 100000) money = 100000; }
+    if(farmName.toLowerCase().includes("vermidon") && money < 100000) money = 100000;
     
-    // YENİLİK: Bilgi ekranını güncelle
-    infoEl.textContent = `Gün: ${dayCount} | Para: ${formatMoney(money)} | Seviye: ${level} | Versiyon: ${GAME_VERSION}`;
-    const xpPercentage = (xp / xpToNextLevel) * 100;
-    xpBar.style.width = `${xpPercentage}%`;
-    xpBar.textContent = `${Math.floor(xp)} / ${xpToNextLevel} XP`;
-    
-    farmTitle.textContent = `${farmName}`;
-    document.title = `${farmName}`;
-  }
-
-  function formatMoney(m) {
-    return m === Infinity ? '∞₺' : `${m}₺`;
+    infoEl.textContent = `Gün: ${dayCount} | Para: ${money}₺ | Seviye: ${level} | Ver: ${GAME_VERSION}`;
+    xpBar.style.width = `${(xp / xpToNextLevel) * 100}%`;
+    xpBarText.textContent = `${Math.floor(xp)} / ${xpToNextLevel} XP`;
+    farmTitle.textContent = document.title = farmName;
   }
 
   function changePage(next) {
-    if(next && currentFarmPage < farmPagesCount - 1) currentFarmPage++;
-    else if(!next && currentFarmPage > 0) currentFarmPage--;
-    selectedItem = null;
-    selectedItemType = 'seed';
-    drawInventory();
-    drawFarm();
-    sounds.pageChange.play();
+    const newPage = currentFarmPage + (next ? 1 : -1);
+    if (newPage >= 0 && newPage < farmPagesCount) {
+        currentFarmPage = newPage;
+        selectedItem = null;
+        selectedItemType = 'seed';
+        drawInventory();
+        drawFarm();
+        try { sounds.pageChange.play(); } catch(e) {}
+    }
   }
 
   function drawBugs() {
     bugFarmEl.innerHTML = '';
-    if(currentFarmPage !== farmPagesCount -1) return;
+    
     const bugKeys = Object.keys(purchasedBugs).filter(b => purchasedBugs[b]);
     if(bugKeys.length === 0) {
-      bugFarmEl.textContent = 'Böcek satın alınmadı.';
-      bugFarmEl.style.cssText = 'font-size: 16px; color: white; display: flex; align-items: center; justify-content: center;';
+      bugFarmEl.innerHTML = '<p style="color: #000; font-weight: bold; width:100%; text-align:center;">Hazine avına çıkmak için marketten böcek satın al!</p>';
       return;
     }
-    bugFarmEl.style.cssText = '';
-    const cols = 5;
-    const rows = Math.ceil(bugKeys.length / cols);
-    const cellWidth = bugFarmEl.clientWidth / cols;
-    const cellHeight = bugFarmEl.clientHeight / rows;
-    bugKeys.forEach((bugKey, index) => {
-      const bug = document.createElement('div');
-      bug.className = 'bug';
-      bug.textContent = bugs[bugKey].emoji;
-      bug.title = bugs[bugKey].name;
-      const col = index % cols;
-      const row = Math.floor(index / cols);
-      const x = col * cellWidth + (cellWidth - 30)/2;
-      const y = row * cellHeight + (cellHeight - 30)/2;
-      bug.style.left = `${x}px`; bug.style.top = `${y}px`; bug.style.transform = 'translate(0,0)';
-      bug.dataset.bugKey = bugKey;
-      bug.onclick = () => showMessage(`Bu bir ${bugs[bugKey].name}!`);
-      bugFarmEl.appendChild(bug);
+
+    const now = Date.now();
+    bugKeys.forEach(key => {
+      const bugData = bugs[key];
+      const bugDiv = document.createElement('div');
+      bugDiv.className = 'bug-display';
+      
+      const lastPlayed = bugLastPlayed[key] || 0;
+      const remainingMs = BUG_HUNT_COOLDOWN - (now - lastPlayed);
+
+      bugDiv.innerHTML = `<span class="bug-emoji">${bugData.emoji}</span>`;
+      const cooldownSpan = document.createElement('span');
+      cooldownSpan.className = 'bug-cooldown';
+      
+      if (remainingMs > 0) {
+        bugDiv.classList.add('on-cooldown');
+        const remainingMin = Math.ceil(remainingMs / 60000);
+        cooldownSpan.textContent = `${remainingMin} dk`;
+        bugDiv.onclick = () => {
+             showMessage(`${bugs[key].name} ile hazine avına çıkmak için ${remainingMin} dakika beklemelisin.`);
+        };
+      } else {
+        cooldownSpan.textContent = 'Hazır!';
+        bugDiv.onclick = () => startTreasureHunt(key);
+      }
+      bugDiv.appendChild(cooldownSpan);
+      bugFarmEl.appendChild(bugDiv);
     });
   }
 
@@ -1339,135 +1538,195 @@
     try {
       const saveData = {
         version: GAME_VERSION,
-        money: money === Infinity ? 'Infinity' : money,
-        level, xp, xpToNextLevel, // YENİLİK: Seviye verilerini kaydet
+        money, level, xp, xpToNextLevel,
         seeds, flowerSeeds, farms, currentFarmPage,
         purchasedBugs, purchasedEnhancers, ownedAnimals,
         animalHarvestReady, animalLastHarvest,
-        ownedConsumables, // YENİLİK: Tüketilebilirleri kaydet
+        ownedConsumables, playerQuests, bugLastPlayed,
         marketPrices, previousMarketPrices, marketLastUpdatedDay,
         storeRented, storeRentStart, storeStock,
         customers, customerCounter
       };
       localStorage.setItem('feyza_ciftligi_save_v2', JSON.stringify(saveData));
-    } catch(e) { console.error('Otomatik kaydetme başarısız:', e); }
+    } catch(e) { console.error('Kaydetme hatası:', e); }
   }
 
   function loadGameAuto() {
     try {
       const data = localStorage.getItem('feyza_ciftligi_save_v2');
       if(!data) return false;
-      const saveData = JSON.parse(data);
-
-      money = (saveData.money === 'Infinity' || saveData.money === Infinity) ? 100 : saveData.money || 100;
       
-      // YENİLİK: Seviye verilerini yükle
+      const saveData = JSON.parse(data);
+      money = saveData.money || 100;
       level = saveData.level || 1;
       xp = saveData.xp || 0;
       xpToNextLevel = saveData.xpToNextLevel || 100;
+      seeds = saveData.seeds || { corn: 5, tomato: 5, carrot: 2, wheat: 1, pepper: 1 };
+      flowerSeeds = saveData.flowerSeeds || { rose: 3, tulip: 3, daisy: 3, sunflower: 1, orchid: 1 };
+      
+      // Çiftlik verilerini dikkatli yükle
+      if (saveData.farms && Array.isArray(saveData.farms) && saveData.farms.length === farmPagesCount -1 ) {
+           farms = saveData.farms;
+           farms.push([{ bugType: null, x: 0, y: 0 }]); // Son sayfa için dummy ekle
+      } else {
+          // Eski veya hatalı farms verisi varsa sıfırla
+          farms = [];
+          for(let i=0; i<farmPagesCount-1; i++) {
+            let pageFarm = [];
+            for(let j=0; j<farmSize*farmSize; j++) {
+              pageFarm.push({ state: 'empty', cropType: null, plantedAt: null, growTimeMinutes: 0 });
+            }
+            farms.push(pageFarm);
+          }
+          farms.push([{ bugType: null, x: 0, y: 0 }]);
+      }
 
-      seeds = saveData.seeds || { corn: 0, tomato: 0 };
-      flowerSeeds = saveData.flowerSeeds || { rose: 0, tulip: 0, daisy: 0 };
-      farms = saveData.farms || farms;
       currentFarmPage = saveData.currentFarmPage || 0;
       purchasedBugs = saveData.purchasedBugs || {};
       purchasedEnhancers = saveData.purchasedEnhancers || {};
       ownedAnimals = saveData.ownedAnimals || { chicken: 0, cow: 0, goat: 0 };
-      animalHarvestReady = saveData.animalHarvestReady || { chicken: false, cow: false, goat: false };
-      animalLastHarvest = saveData.animalLastHarvest || { chicken: 0, cow: 0, goat: 0 };
-      
-      // YENİLİK: Tüketilebilirleri yükle
+      animalHarvestReady = saveData.animalHarvestReady || {};
+      animalLastHarvest = saveData.animalLastHarvest || {};
       ownedConsumables = saveData.ownedConsumables || { superFertilizer: 0 };
-
+      playerQuests = saveData.playerQuests || [];
+      bugLastPlayed = saveData.bugLastPlayed || {};
       marketPrices = saveData.marketPrices || {};
       previousMarketPrices = saveData.previousMarketPrices || {};
       marketLastUpdatedDay = saveData.marketLastUpdatedDay || null;
       storeRented = saveData.storeRented || false;
       storeRentStart = saveData.storeRentStart || 0;
-      storeStock = saveData.storeStock || { danaEti: 0, hamburgerEkmegi: 0, sosis: 0, sosisliEkmegi: 0, ayran: 0, kola: 0 };
+      storeStock = saveData.storeStock || {};
       customers = saveData.customers || [];
       customerCounter = saveData.customerCounter || 0;
 
-      updateInfo(); drawInventory(); drawFarm(); drawBugs(); drawEnhancerList(); drawAnimals();
+      updateInfo(); drawInventory(); drawFarm(); drawEnhancerList();
       return true;
     } catch(e) {
-      showMessage('Yükleme başarısız!');
-      console.error(e);
-      return false;
+      showMessage('Yükleme başarısız! Konsolu kontrol edin.');
+      console.error("Yükleme Hatası:", e);
+      // Hata durumunda varsayılan değerlere dönmek yerine oyunu sıfırlamak daha güvenli olabilir.
+      // Veya kullanıcıya yeni oyun başlatma seçeneği sunulabilir.
+      // Şimdilik false döndürüp yeni oyun mantığının devreye girmesini sağlıyoruz.
+      return false; 
     }
   }
 
   function showMessage(text) {
     messageEl.textContent = text;
-    setTimeout(() => { if (messageEl.textContent === text) messageEl.textContent = ''; }, 4000); // Mesaj gösterme süresi uzatıldı
+    setTimeout(() => { if (messageEl.textContent === text) messageEl.textContent = ''; }, 4000);
   }
 
   storeRentBtn.addEventListener('click', () => {
-    if(storeRented) return;
-    if(money === Infinity || money >= 1000) {
-      if(money !== Infinity) money -= 1000;
-      storeRented = true; storeRentStart = Date.now(); addNewCustomer(); sounds.buy.play();
+    if(!storeRented && money >= 1000) {
+      money -= 1000;
+      storeRented = true;
+      storeRentStart = Date.now();
+      addNewCustomer();
       showMessage('Dükkan kiralandı! 6 saat boyunca kullanabilirsiniz.');
       updateInfo(); drawStorePage(); saveGameAuto();
-    } else { showMessage('Kiranız için paranız yetmiyor!'); }
+    } else if (storeRented) {
+        showMessage("Dükkan zaten kiralanmış durumda.");
+    } else {
+        showMessage("Dükkanı kiralamak için yeterli paranız yok.");
+    }
   });
 
   prevPageBtn.addEventListener('click', () => changePage(false));
   nextPageBtn.addEventListener('click', () => changePage(true));
-
   openMarketBtn.addEventListener('click', () => { updateMarketPrices(); openMarket(); });
   closeMarketBtn.addEventListener('click', closeMarket);
-  marketOverlay.addEventListener('click', () => { closeMarket(); closeMarketPrices(); });
+  marketOverlay.addEventListener('click', () => { 
+      closeMarket(); 
+      closeMarketPrices();
+      if(treasureHuntModal.style.display === 'block') { // Hazine avı açıksa onu da kapat
+          treasureHuntModal.style.display = 'none';
+          marketOverlay.style.display = 'none';
+          treasureGame.active = false;
+      }
+  });
   openMarketPricesBtn.addEventListener('click', openMarketPrices);
   closeMarketPricesBtn.addEventListener('click', closeMarketPrices);
 
   newGameBtn.addEventListener('click', () => {
     if(confirm('Yeni oyuna başlamak istediğine emin misin? Tüm kayıtların silinecek!')) {
-      localStorage.removeItem('feyza_ciftligi_save_v2');
-      localStorage.removeItem('feyza_ciftligi_farm_name');
-      localStorage.removeItem("feyza_ciftligi_first_play_date");
-      location.reload(); // Sayfayı yeniden yükleyerek sıfırdan başlat
+      localStorage.clear();
+      location.reload();
     }
   });
 
   function getFarmName() { return localStorage.getItem('feyza_ciftligi_farm_name'); }
-  function askFarmName(forceAsk = false) {
-    let name = getFarmName();
-    if(name && !forceAsk) return name;
-    name = prompt("Tarlanıza bir isim verin! (örneğin: Feyza'nın Çiftliği)") || "Feyza'nın Çiftliği";
-    name = name.trim();
-    if(name.length === 0) name = "Feyza'nın Çiftliği";
-    if(!name.toLowerCase().includes('çiftliği')) name = `${name} Çiftliği`;
-    localStorage.setItem('feyza_ciftligi_farm_name', name);
+  function askFarmName() {
+    let name = prompt("Tarlanıza bir isim verin!", "Feyza'nın Çiftliği") || "Feyza'nın Çiftliği";
+    if(!name.toLowerCase().includes('çiftliği')) name += " Çiftliği";
+    localStorage.setItem('feyza_ciftligi_farm_name', name.trim());
     return name;
   }
-
-  if(!getFarmName()) askFarmName();
-
+  
   function periodicUpdate() {
-    updateInfo(); drawFarm(); updateTimeInPlots(); updateAnimalHarvestStatus(); drawAnimals();
+    updateInfo();
+    updateTimeInPlots(); // Sadece farmEl görünürse çağrılmalı
+    updateAnimalHarvestStatus();
+    
+    const currentPageConfig = [
+        { type: 'farm' }, { type: 'farm' },
+        { type: 'store' }, { type: 'animal' }, { type: 'bug' }
+    ][currentFarmPage];
+
+    if (currentPageConfig.type === 'farm' && farmEl.style.display === 'grid') updateTimeInPlots();
+    if (currentPageConfig.type === 'animal' && animalFarmEl.style.display === 'flex') drawAnimals();
+    if (currentPageConfig.type === 'bug' && bugFarmEl.style.display === 'flex') drawBugs();
+
     if(storeRented && (Date.now() - storeRentStart >= MS_IN_6_HOURS)) {
-      storeRented = false; customers = []; showMessage('Dükkanınızın kira süresi doldu.');
+      storeRented = false; customers = [];
+      showMessage('Dükkanınızın kira süresi doldu.');
+      if (currentPageConfig.type === 'store') drawStorePage();
     }
-    if(currentFarmPage === farmPagesCount - 3) drawStorePage();
-    updateMarketPrices();
+    
     saveGameAuto();
     setTimeout(periodicUpdate, 1000);
   }
-
-  const loaded = loadGameAuto();
-  if(!loaded) {
-      // Yeni oyun başlangıç değerlerini ayarla
+  
+  // OYUN BAŞLANGICI
+  if(!getFarmName()) askFarmName();
+  
+  if(!loadGameAuto()) {
+      // Yeni oyun için varsayılanları ayarla
       money = 100;
       level = 1;
       xp = 0;
       xpToNextLevel = 100;
       seeds = { corn: 5, tomato: 5, carrot: 2, wheat: 1, pepper: 1 };
       flowerSeeds = { rose: 3, tulip: 3, daisy: 3, sunflower: 1, orchid: 1 };
+      purchasedBugs = {};
+      purchasedEnhancers = {};
+      ownedAnimals = { chicken: 0, cow: 0, goat: 0 };
+      animalHarvestReady = {};
+      animalLastHarvest = {};
       ownedConsumables = { superFertilizer: 0 };
-      // Diğer sıfırlama işlemleri...
+      playerQuests = [];
+      bugLastPlayed = {};
+      farms = [];
+      for(let i=0; i<farmPagesCount-1; i++) {
+        let pageFarm = [];
+        for(let j=0; j<farmSize*farmSize; j++) {
+          pageFarm.push({ state: 'empty', cropType: null, plantedAt: null, growTimeMinutes: 0 });
+        }
+        farms.push(pageFarm);
+      }
+      farms.push([{ bugType: null, x: 0, y: 0 }]);
+
+      initQuests();
       saveGameAuto();
+  } else {
+      // Yüklü oyunda da görevleri kontrol et/başlat
+      if (!playerQuests || playerQuests.length === 0) {
+          initQuests();
+      } else {
+          drawQuests(); // Mevcut görevleri çiz
+      }
   }
+  
+  drawFarm(); // İlk sayfa görünümünü ayarla
   periodicUpdate();
 
 </script>
@@ -1482,3 +1741,4 @@
 
 </body>
 </html>
+```
