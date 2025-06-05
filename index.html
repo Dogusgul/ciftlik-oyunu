@@ -485,6 +485,51 @@
     // Optional: add axeSound: new Audio('sounds/axe.wav')
   };
 
+  // BACKGROUND MUSIC START
+  const musicTheme1 = new Audio('sounds/main-theme1.mp3');
+  const musicTheme2 = new Audio('sounds/main-theme2.mp3');
+  let musicPlaying = false; // To control music start via user interaction
+
+  musicTheme1.loop = false; // We'll handle looping manually
+  musicTheme2.loop = false; // We'll handle looping manually
+
+  musicTheme1.addEventListener('ended', function() {
+    console.log("Tema 1 bitti, Tema 2 başlıyor.");
+    musicTheme2.play().catch(e => console.error("Müzik 2 çalınırken hata oluştu:", e));
+  });
+
+  musicTheme2.addEventListener('ended', function() {
+    console.log("Tema 2 bitti, Tema 1 başlıyor.");
+    musicTheme1.play().catch(e => console.error("Müzik 1 çalınırken hata oluştu:", e));
+  });
+
+  function startBackgroundMusic() {
+    if (musicPlaying) return; // Don't try to start if already initiated
+
+    musicTheme1.play().then(() => {
+        console.log("Arka plan müziği (Tema 1) başladı.");
+        musicPlaying = true;
+    }).catch(error => {
+        console.warn("Otomatik müzik çalma engellendi. Kullanıcı etkileşimi bekleniyor.", error);
+        // Add a one-time event listener to the body to start music on first click/tap
+        const playOnClick = () => {
+            if (musicPlaying) return; // Check again in case it started some other way
+            console.log("Kullanıcı etkileşimiyle müzik başlatılıyor.");
+            musicTheme1.play().then(() => {
+                musicPlaying = true;
+                console.log("Arka plan müziği (Tema 1) kullanıcı etkileşimiyle başladı.");
+            }).catch(e => console.error("Müzik 1 kullanıcı etkileşimiyle çalınırken hata oluştu:", e));
+            // Remove the listeners as they are no longer needed
+            document.body.removeEventListener('click', playOnClick);
+            document.body.removeEventListener('touchstart', playOnClick);
+        };
+        document.body.addEventListener('click', playOnClick, { once: true });
+        document.body.addEventListener('touchstart', playOnClick, { once: true });
+    });
+  }
+  // BACKGROUND MUSIC END
+
+
   const GAME_VERSION = '2.4.0';
   const ORCHARD_PAGE_INDEX = 2;
 
@@ -2015,6 +2060,7 @@
   updateMarketPrices(); // Initial market price setup
   drawFarm(); // Initial draw of the current page
   periodicUpdate(); // Start the main game loop
+  startBackgroundMusic(); // Attempt to start background music
 
   if('serviceWorker' in navigator) {
     navigator.serviceWorker.register('service-worker.js')
