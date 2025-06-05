@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -632,14 +631,14 @@
   let customerCounter = 0;
 
   let farms = [];
-  for(let i=0; i<farmPagesCount-1; i++) {
+  // Initialize farms with empty plots for all pages
+  for(let i=0; i<farmPagesCount; i++) { // Changed to farmPagesCount to include the last page
     let pageFarm = [];
     for(let j=0; j<farmSize*farmSize; j++) {
       pageFarm.push({ state: 'empty', cropType: null, plantedAt: null, growTimeMinutes: 0 });
     }
     farms.push(pageFarm);
   }
-  farms.push([{ bugType: null, x: 0, y: 0 }]); // Son sayfa (bug farm) için dummy
 
   let currentFarmPage = 0;
   let selectedItem = null;
@@ -885,29 +884,33 @@
     const sourceSeeds = currentFarmPage === 1 ? flowerSeeds : seeds;
     const sourceCrops = currentFarmPage === 1 ? flowers : crops;
 
-    for(const key in sourceSeeds) {
-        if(sourceSeeds[key] > 0) {
-            const btn = document.createElement('div');
-            btn.className = 'inv-item';
-            if(selectedItem === key && selectedItemType === 'seed') btn.classList.add('selected');
-            const emojiSpan = document.createElement('span');
-            emojiSpan.textContent = sourceCrops[key].emoji;
-            const countSpan = document.createElement('span');
-            countSpan.className = 'inv-count';
-            countSpan.textContent = sourceSeeds[key];
-            btn.title = `${sourceCrops[key].name} (${sourceSeeds[key]} adet)`;
-            btn.onclick = () => {
-                selectedItem = key;
-                selectedItemType = 'seed';
-                drawInventory();
-                showMessage(`${sourceCrops[key].name} seçildi.`);
-            };
-            btn.appendChild(emojiSpan);
-            btn.appendChild(countSpan);
-            inventoryEl.appendChild(btn);
+    // Only show seeds for the current farm type
+    if (currentFarmPage === 0 || currentFarmPage === 1) {
+        for(const key in sourceSeeds) {
+            if(sourceSeeds[key] > 0) {
+                const btn = document.createElement('div');
+                btn.className = 'inv-item';
+                if(selectedItem === key && selectedItemType === 'seed') btn.classList.add('selected');
+                const emojiSpan = document.createElement('span');
+                emojiSpan.textContent = sourceCrops[key].emoji;
+                const countSpan = document.createElement('span');
+                countSpan.className = 'inv-count';
+                countSpan.textContent = sourceSeeds[key];
+                btn.title = `${sourceCrops[key].name} (${sourceSeeds[key]} adet)`;
+                btn.onclick = () => {
+                    selectedItem = key;
+                    selectedItemType = 'seed';
+                    drawInventory();
+                    showMessage(`${sourceCrops[key].name} seçildi.`);
+                };
+                btn.appendChild(emojiSpan);
+                btn.appendChild(countSpan);
+                inventoryEl.appendChild(btn);
+            }
         }
     }
     
+    // Always show consumables
     for (const key in ownedConsumables) {
         if (ownedConsumables[key] > 0) {
             const itemData = consumables[key];
@@ -951,16 +954,21 @@
     storePageEl.style.display = 'none';
     
     const pageConfig = [
-        { type: 'farm', displayEl: farmEl, drawFunc: drawFarmPlots, title: `Tarla ${currentFarmPage + 1}` },
-        { type: 'farm', displayEl: farmEl, drawFunc: drawFarmPlots, title: `Tarla ${currentFarmPage + 1}` },
+        { type: 'farm', displayEl: farmEl, drawFunc: drawFarmPlots, title: `Tarla 1` },
+        { type: 'farm', displayEl: farmEl, drawFunc: drawFarmPlots, title: `Tarla 2 (Çiçek)` },
         { type: 'store', displayEl: storePageEl, drawFunc: drawStorePage, title: 'Dükkan' },
         { type: 'animal', displayEl: animalFarmEl, drawFunc: drawAnimals, title: 'Hayvan Çiftliği' },
         { type: 'bug', displayEl: bugFarmEl, drawFunc: drawBugs, title: 'Böcek Tarlası' }
     ];
 
     const config = pageConfig[currentFarmPage];
-    config.displayEl.style.display = config.type === 'farm' ? 'grid' : 'flex';
-    if (config.type === 'bug') config.displayEl.style.display = 'flex'; // bugFarm için flex yaptık
+    // Special handling for farm pages (0 and 1) to use grid display.
+    // Other pages use flex.
+    if (config.type === 'farm') {
+        config.displayEl.style.display = 'grid';
+    } else {
+        config.displayEl.style.display = 'flex';
+    }
     config.drawFunc();
     pageIndicator.textContent = `${config.title} / ${farmPagesCount}`;
     
@@ -974,26 +982,34 @@
     farm.forEach((plot, i) => {
       const plotEl = document.createElement('div');
       plotEl.classList.add('plot');
-      if(currentFarmPage === 1) plotEl.style.backgroundColor = '#7a4f8a';
       
+      // Determine background color based on plot state and page type
       if(plot.state === 'empty') {
         plotEl.style.backgroundColor = currentFarmPage === 1 ? '#7a4f8a' : '#7b4f24';
       } else {
         const isReady = isPlotReady(plot);
-        plotEl.classList.add(isReady ? 'grown' : 'planted');
-        const emoji = (currentFarmPage === 1 ? flowers : crops)[plot.cropType]?.emoji || '';
+        const isSpoiled = isPlotSpoiled(plot);
         
-        const emojiSpan = document.createElement('span');
-        emojiSpan.textContent = emoji;
-        emojiSpan.style.fontSize = isReady ? '40px' : '30px';
+        if (isSpoiled) {
+            plotEl.style.backgroundColor = '#616161'; // Darker for spoiled
+            plotEl.innerHTML = '<span style="font-size:20px;">🤢</span>'; // Spoiled emoji
+            plotEl.classList.add('spoiled'); // Add spoiled class if you want to style further
+        } else {
+            plotEl.classList.add(isReady ? 'grown' : 'planted');
+            const emoji = (currentFarmPage === 1 ? flowers : crops)[plot.cropType]?.emoji || '';
+            
+            const emojiSpan = document.createElement('span');
+            emojiSpan.textContent = emoji;
+            emojiSpan.style.fontSize = isReady ? '40px' : '30px';
 
-        const timeSpan = document.createElement('span');
-        timeSpan.style.fontSize = '14px';
-        timeSpan.style.fontWeight = 'bold';
-        timeSpan.dataset.plotIndex = i;
+            const timeSpan = document.createElement('span');
+            timeSpan.style.fontSize = '14px';
+            timeSpan.style.fontWeight = 'bold';
+            timeSpan.dataset.plotIndex = i;
 
-        plotEl.appendChild(emojiSpan);
-        plotEl.appendChild(timeSpan);
+            plotEl.appendChild(emojiSpan);
+            plotEl.appendChild(timeSpan);
+        }
       }
       plotEl.onclick = () => handlePlotClick(i, plot);
       farmEl.appendChild(plotEl);
@@ -1003,7 +1019,7 @@
   
   function handlePlotClick(index, plot) {
     if (selectedItemType === 'consumable' && selectedItem === 'superFertilizer') {
-        if (plot.state === 'planted' && !isPlotReady(plot)) {
+        if (plot.state === 'planted' && !isPlotReady(plot) && !isPlotSpoiled(plot)) {
             useSuperFertilizer(index);
         } else {
             showMessage('Süper Gübre sadece ekili ve büyümemiş bitkilerde kullanılır!');
@@ -1022,6 +1038,11 @@
         harvestCrop(index);
       } else if(isPlotSpoiled(plot)) {
         showMessage('Bu ürün bozuldu, hasat edemezsin!');
+        // Allow clearing spoiled plots by clicking on them
+        farms[currentFarmPage][index] = { state: 'empty', cropType: null, plantedAt: null, growTimeMinutes: 0 };
+        showMessage('Bozulmuş ürün temizlendi.');
+        drawFarm();
+        saveGameAuto();
       } else {
         showMessage('Ekin büyüyor, sabırlı ol!');
       }
@@ -1111,11 +1132,19 @@
       customers.forEach((customer, index) => {
         const custDiv = document.createElement('div');
         custDiv.className = 'customer';
-        const orderNames = customer.orders.map(o => o.charAt(0).toUpperCase() + o.slice(1)).join(' ve ');
+        const orderNames = customer.orders.map(o => {
+            if (o === 'hamburger') return 'Hamburger';
+            if (o === 'sosisli') return 'Sosisli';
+            return storeProducts[o] ? storeProducts[o].name : o;
+        }).join(' ve ');
         custDiv.innerHTML = `Müşteri ${orderNames} istiyor.`;
         custDiv.onclick = () => deliverOrder(index);
         customersEl.appendChild(custDiv);
       });
+    } else if (storeRented && customers.length === 0) {
+        customersEl.innerHTML = '<p>Bekleyen müşteri yok.</p>';
+    } else if (!storeRented) {
+        customersEl.innerHTML = '<p>Dükkanı kiralayınca müşteriler gelmeye başlayacak!</p>';
     }
   }
 
@@ -1173,7 +1202,8 @@
 
     showMessage(`Sipariş teslim edildi! +${totalGain}₺ ve ${totalXp} XP!`);
     customers.splice(customerIndex, 1);
-    if(storeRented) addNewCustomer();
+    // Only add a new customer if the store is still rented
+    if(storeRented) addNewCustomer(); 
     
     updateInfo();
     drawStorePage();
@@ -1181,6 +1211,9 @@
   }
 
   function addNewCustomer() {
+    // Only add a new customer if there are less than 3 active customers and the store is rented
+    if (customers.length >= 3 || !storeRented) return;
+
     const possibleOrders = ['hamburger', 'kola', 'ayran', 'sosisli'];
     const orderCount = Math.floor(Math.random() * 2) + 1;
     let orders = [];
@@ -1206,7 +1239,7 @@
       if(isPlotSpoiled(plot)) {
         span.textContent = 'BOZULDU!'; span.style.color = '#b71c1c';
       } else if(remainingMs <= 0) {
-        span.textContent = 'Hasat hazır!'; span.style.color = '#aed581';
+        span.textContent = 'Hazır!'; span.style.color = '#aed581';
       } else {
         const remMin = Math.floor(remainingMs / 60000);
         const remS = Math.floor((remainingMs % 60000) / 1000);
@@ -1239,6 +1272,8 @@
   function isPlotSpoiled(plot) {
     if(plot.state !== 'planted' || !plot.plantedAt) return false;
     const maxHours = purchasedEnhancers.freshKeeper ? 48 : 24;
+    // Spoilage time is after the growth time plus the spoilage duration.
+    // So, total time till spoiled = growTimeMinutes + maxHours * 60 minutes
     return (Date.now() - plot.plantedAt) >= (getEffectiveGrowTime(plot) + maxHours * 60) * MS_IN_MINUTE;
   }
 
@@ -1247,8 +1282,8 @@
     const cropData = isFlowerPage ? flowers[cropKey] : crops[cropKey];
     const sourceSeeds = isFlowerPage ? flowerSeeds : seeds;
     
-    if(!cropData || (isFlowerPage && !flowers[cropKey]) || (!isFlowerPage && !crops[cropKey])) {
-        showMessage('Bu tohumu bu tarlaya ekemezsin!');
+    if(!cropData) {
+        showMessage('Bu tohum bu tarlaya ekilemez!');
         return;
     }
     if(sourceSeeds[cropKey] <= 0) {
@@ -1266,10 +1301,21 @@
   }
 
   function useSuperFertilizer(index) {
-    if (ownedConsumables.superFertilizer <= 0) return;
+    if (ownedConsumables.superFertilizer <= 0) {
+        showMessage('Süper Gübreniz yok!');
+        return;
+    }
     
     let plot = farms[currentFarmPage][index];
-    plot.plantedAt -= getEffectiveGrowTime(plot) * MS_IN_MINUTE;
+    if (plot.state !== 'planted' || isPlotReady(plot) || isPlotSpoiled(plot)) {
+        showMessage('Süper Gübre sadece ekili ve büyümemiş bitkilerde kullanılır!');
+        return;
+    }
+
+    // Set plantedAt to a time in the past that makes it immediately ready
+    // Ensure it's not set *too* far in the past to prevent immediate spoilage
+    const effectiveGrowTimeMs = getEffectiveGrowTime(plot) * MS_IN_MINUTE;
+    plot.plantedAt = Date.now() - effectiveGrowTimeMs - 1000; // 1 second before ready
     ownedConsumables.superFertilizer--;
     
     showMessage(`${allProducts[plot.cropType].name} anında büyüdü!`);
@@ -1283,10 +1329,15 @@
     let cropData = currentFarmPage === 1 ? flowers[cropKey] : crops[cropKey];
 
     if(isPlotSpoiled(plot)) {
-      farms[currentFarmPage][index] = { state: 'empty' };
+      farms[currentFarmPage][index] = { state: 'empty', cropType: null, plantedAt: null, growTimeMinutes: 0 };
       showMessage(`${cropData.name} bozulmuş, hasat edilemedi! 😢`);
       drawFarm(); saveGameAuto();
       return;
+    }
+    
+    if (!isPlotReady(plot)) {
+        showMessage('Ekin henüz hasat için hazır değil!');
+        return;
     }
 
     let gain = (currentFarmPage === 1) ? Math.max(cropData.price, cropData.seedPrice + 20)
@@ -1300,7 +1351,7 @@
     addXp(cropData.xp * (1 + extra));
     updateQuestProgress('harvest', cropKey, (1 + extra));
 
-    farms[currentFarmPage][index] = { state: 'empty' };
+    farms[currentFarmPage][index] = { state: 'empty', cropType: null, plantedAt: null, growTimeMinutes: 0 };
     try { sounds.harvest.play(); } catch(e) {}
     showMessage(`${cropData.name} hasat edildi! +${totalGain}₺`);
     updateInfo(); drawFarm(); saveGameAuto();
@@ -1332,7 +1383,7 @@
         btn.className = 'seedBtn';
         btn.textContent = `${crop.emoji} ${crop.name} Tohumu - ${crop.seedPrice}₺`;
         btn.disabled = money < crop.seedPrice;
-        btn.onclick = () => (crops[key] ? buySeed(key) : buySeedFlower(key));
+        btn.onclick = () => (crops[key] ? buySeed(key) : buySeedFlower(key)); // Differentiate based on crop or flower
         marketSeedsDiv.appendChild(btn);
     });
   }
@@ -1401,7 +1452,7 @@
     if(money >= bugs[bugKey].price) {
       money -= bugs[bugKey].price;
       purchasedBugs[bugKey] = true;
-      bugLastPlayed[bugKey] = 0; // Yeni alınan böceğin bekleme süresi olmasın
+      bugLastPlayed[bugKey] = 0; // Newly purchased bugs have no cooldown initially
       try { sounds.buy.play(); } catch(e) {}
       showMessage(`${bugs[bugKey].name} satın alındı!`);
       updateInfo(); renderMarketBugs(); drawBugs(); saveGameAuto();
@@ -1488,9 +1539,9 @@
     const newPage = currentFarmPage + (next ? 1 : -1);
     if (newPage >= 0 && newPage < farmPagesCount) {
         currentFarmPage = newPage;
-        selectedItem = null;
-        selectedItemType = 'seed';
-        drawInventory();
+        selectedItem = null; // Clear selected item on page change
+        selectedItemType = 'seed'; // Reset selected item type
+        drawInventory(); // Redraw inventory based on new page type
         drawFarm();
         try { sounds.pageChange.play(); } catch(e) {}
     }
@@ -1548,42 +1599,54 @@
         customers, customerCounter
       };
       localStorage.setItem('feyza_ciftligi_save_v2', JSON.stringify(saveData));
+      console.log('Game saved automatically.');
     } catch(e) { console.error('Kaydetme hatası:', e); }
   }
 
   function loadGameAuto() {
     try {
       const data = localStorage.getItem('feyza_ciftligi_save_v2');
-      if(!data) return false;
+      if(!data) {
+          console.log('No saved game found.');
+          return false;
+      }
       
       const saveData = JSON.parse(data);
-      money = saveData.money || 100;
-      level = saveData.level || 1;
-      xp = saveData.xp || 0;
-      xpToNextLevel = saveData.xpToNextLevel || 100;
+      console.log('Loaded game data:', saveData);
+
+      // Check version for compatibility if needed. For now, just load.
+      if (saveData.version !== GAME_VERSION) {
+          console.warn(`Game version mismatch. Saved: ${saveData.version}, Current: ${GAME_VERSION}. Data might be reset for incompatible parts.`);
+          // Potentially handle migration here or just reset.
+      }
+
+      money = saveData.money !== undefined ? saveData.money : 100;
+      level = saveData.level !== undefined ? saveData.level : 1;
+      xp = saveData.xp !== undefined ? saveData.xp : 0;
+      xpToNextLevel = saveData.xpToNextLevel !== undefined ? saveData.xpToNextLevel : 100;
       seeds = saveData.seeds || { corn: 5, tomato: 5, carrot: 2, wheat: 1, pepper: 1 };
       flowerSeeds = saveData.flowerSeeds || { rose: 3, tulip: 3, daisy: 3, sunflower: 1, orchid: 1 };
       
-      // Çiftlik verilerini dikkatli yükle
-      if (saveData.farms && Array.isArray(saveData.farms) && saveData.farms.length === farmPagesCount -1 ) {
+      // *** Crucial part: Load farms data properly ***
+      if (saveData.farms && Array.isArray(saveData.farms) && saveData.farms.length === farmPagesCount) {
            farms = saveData.farms;
-           farms.push([{ bugType: null, x: 0, y: 0 }]); // Son sayfa için dummy ekle
+           console.log('Farms loaded successfully.');
       } else {
-          // Eski veya hatalı farms verisi varsa sıfırla
+          // If farms data is missing or malformed, re-initialize it
+          console.warn('Farms data missing or invalid, re-initializing farms.');
           farms = [];
-          for(let i=0; i<farmPagesCount-1; i++) {
+          for(let i=0; i<farmPagesCount; i++) { // Initialize for all pages
             let pageFarm = [];
             for(let j=0; j<farmSize*farmSize; j++) {
               pageFarm.push({ state: 'empty', cropType: null, plantedAt: null, growTimeMinutes: 0 });
             }
             farms.push(pageFarm);
           }
-          farms.push([{ bugType: null, x: 0, y: 0 }]);
       }
 
-      currentFarmPage = saveData.currentFarmPage || 0;
+      currentFarmPage = saveData.currentFarmPage !== undefined ? saveData.currentFarmPage : 0;
       purchasedBugs = saveData.purchasedBugs || {};
-      purchasedEnhancers = saveData.purchasedEnhancers || {};
+      purchasedEnhancers = saveData.purchancers || {}; // Typo fixed: 'purchasers' -> 'purchasedEnhancers'
       ownedAnimals = saveData.ownedAnimals || { chicken: 0, cow: 0, goat: 0 };
       animalHarvestReady = saveData.animalHarvestReady || {};
       animalLastHarvest = saveData.animalLastHarvest || {};
@@ -1593,20 +1656,17 @@
       marketPrices = saveData.marketPrices || {};
       previousMarketPrices = saveData.previousMarketPrices || {};
       marketLastUpdatedDay = saveData.marketLastUpdatedDay || null;
-      storeRented = saveData.storeRented || false;
-      storeRentStart = saveData.storeRentStart || 0;
-      storeStock = saveData.storeStock || {};
+      storeRented = saveData.storeRented !== undefined ? saveData.storeRented : false;
+      storeRentStart = saveData.storeRentStart !== undefined ? saveData.storeRentStart : 0;
+      storeStock = saveData.storeStock || { danaEti: 0, hamburgerEkmegi: 0, sosis: 0, sosisliEkmegi: 0, ayran: 0, kola: 0 }; // Initialize storeStock
       customers = saveData.customers || [];
-      customerCounter = saveData.customerCounter || 0;
+      customerCounter = saveData.customerCounter !== undefined ? saveData.customerCounter : 0;
 
       updateInfo(); drawInventory(); drawFarm(); drawEnhancerList();
       return true;
     } catch(e) {
       showMessage('Yükleme başarısız! Konsolu kontrol edin.');
       console.error("Yükleme Hatası:", e);
-      // Hata durumunda varsayılan değerlere dönmek yerine oyunu sıfırlamak daha güvenli olabilir.
-      // Veya kullanıcıya yeni oyun başlatma seçeneği sunulabilir.
-      // Şimdilik false döndürüp yeni oyun mantığının devreye girmesini sağlıyoruz.
       return false; 
     }
   }
@@ -1621,7 +1681,7 @@
       money -= 1000;
       storeRented = true;
       storeRentStart = Date.now();
-      addNewCustomer();
+      addNewCustomer(); // Add initial customer when store is rented
       showMessage('Dükkan kiralandı! 6 saat boyunca kullanabilirsiniz.');
       updateInfo(); drawStorePage(); saveGameAuto();
     } else if (storeRented) {
@@ -1635,13 +1695,16 @@
   nextPageBtn.addEventListener('click', () => changePage(true));
   openMarketBtn.addEventListener('click', () => { updateMarketPrices(); openMarket(); });
   closeMarketBtn.addEventListener('click', closeMarket);
-  marketOverlay.addEventListener('click', () => { 
-      closeMarket(); 
-      closeMarketPrices();
-      if(treasureHuntModal.style.display === 'block') { // Hazine avı açıksa onu da kapat
-          treasureHuntModal.style.display = 'none';
-          marketOverlay.style.display = 'none';
-          treasureGame.active = false;
+  marketOverlay.addEventListener('click', (event) => { 
+      // Only close if clicked directly on the overlay, not on a modal
+      if (event.target === marketOverlay) {
+          closeMarket(); 
+          closeMarketPrices();
+          if(treasureHuntModal.style.display === 'block') {
+              treasureHuntModal.style.display = 'none';
+              marketOverlay.style.display = 'none';
+              treasureGame.active = false;
+          }
       }
   });
   openMarketPricesBtn.addEventListener('click', openMarketPrices);
@@ -1664,22 +1727,44 @@
   
   function periodicUpdate() {
     updateInfo();
-    updateTimeInPlots(); // Sadece farmEl görünürse çağrılmalı
-    updateAnimalHarvestStatus();
     
+    // Call draw functions for relevant pages only if they are currently displayed
     const currentPageConfig = [
         { type: 'farm' }, { type: 'farm' },
         { type: 'store' }, { type: 'animal' }, { type: 'bug' }
     ][currentFarmPage];
 
-    if (currentPageConfig.type === 'farm' && farmEl.style.display === 'grid') updateTimeInPlots();
-    if (currentPageConfig.type === 'animal' && animalFarmEl.style.display === 'flex') drawAnimals();
+    if (currentPageConfig.type === 'farm' && farmEl.style.display === 'grid') {
+        updateTimeInPlots();
+        // Periodically check for spoiled crops on the current farm page and update display
+        farms[currentFarmPage].forEach((plot, index) => {
+            if (plot.state === 'planted' && isPlotSpoiled(plot)) {
+                // This triggers a redraw of that specific plot, showing it as spoiled
+                // No need to change state here, it's just visual. State change happens on click.
+                const plotElement = farmEl.querySelector(`.plot:nth-child(${index + 1})`);
+                if (plotElement) {
+                    plotElement.style.backgroundColor = '#616161';
+                    plotElement.innerHTML = '<span style="font-size:20px;">🤢</span>';
+                }
+            }
+        });
+    }
+    if (currentPageConfig.type === 'animal' && animalFarmEl.style.display === 'flex') updateAnimalHarvestStatus();
     if (currentPageConfig.type === 'bug' && bugFarmEl.style.display === 'flex') drawBugs();
 
-    if(storeRented && (Date.now() - storeRentStart >= MS_IN_6_HOURS)) {
-      storeRented = false; customers = [];
-      showMessage('Dükkanınızın kira süresi doldu.');
-      if (currentPageConfig.type === 'store') drawStorePage();
+    if(storeRented) {
+        if(Date.now() - storeRentStart >= MS_IN_6_HOURS) {
+            storeRented = false; 
+            customers = []; // Clear customers when rent expires
+            showMessage('Dükkanınızın kira süresi doldu.');
+            if (currentPageConfig.type === 'store') drawStorePage(); // Redraw store page to reflect changes
+        } else {
+            // Add new customer periodically if store is rented and max customers not reached
+            if (customers.length < MAX_ACTIVE_QUESTS && Math.random() < 0.1) { // 10% chance to add a customer per second
+                addNewCustomer();
+                if (currentPageConfig.type === 'store') drawStorePage();
+            }
+        }
     }
     
     saveGameAuto();
@@ -1691,6 +1776,7 @@
   
   if(!loadGameAuto()) {
       // Yeni oyun için varsayılanları ayarla
+      console.log('Starting new game as loadGameAuto returned false.');
       money = 100;
       level = 1;
       xp = 0;
@@ -1706,28 +1792,37 @@
       playerQuests = [];
       bugLastPlayed = {};
       farms = [];
-      for(let i=0; i<farmPagesCount-1; i++) {
+      for(let i=0; i<farmPagesCount; i++) { // Initialize for all pages
         let pageFarm = [];
         for(let j=0; j<farmSize*farmSize; j++) {
           pageFarm.push({ state: 'empty', cropType: null, plantedAt: null, growTimeMinutes: 0 });
         }
         farms.push(pageFarm);
       }
-      farms.push([{ bugType: null, x: 0, y: 0 }]);
+      storeRented = false;
+      storeRentStart = 0;
+      storeStock = { danaEti: 0, hamburgerEkmegi: 0, sosis: 0, sosisliEkmegi: 0, ayran: 0, kola: 0 };
+      customers = [];
+      customerCounter = 0;
 
       initQuests();
       saveGameAuto();
   } else {
       // Yüklü oyunda da görevleri kontrol et/başlat
       if (!playerQuests || playerQuests.length === 0) {
+          console.log('No quests loaded, initializing quests.');
           initQuests();
       } else {
+          console.log('Quests loaded, drawing quests.');
           drawQuests(); // Mevcut görevleri çiz
       }
   }
   
+  // Set the initial title of the farm page
+  farmTitle.textContent = document.title = getFarmName() || "Çiftlik 🌾";
+
   drawFarm(); // İlk sayfa görünümünü ayarla
-  periodicUpdate();
+  periodicUpdate(); // Start the game loop
 
 </script>
 
@@ -1741,4 +1836,3 @@
 
 </body>
 </html>
-```
